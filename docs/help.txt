@@ -1,0 +1,74 @@
+Tech Stack: 
+--------------------
+React, Vite, Tailwind CSS, React Router, Axios
+
+
+Folder Ownership
+--------------------
+Person1:
+- pages/auth → Auth pages
+Person2:
+- pages/discovery → Discovery/Matching pages
+Person3:
+- pages/group → Group/Chat pages
+
+
+Shared components (src/components folder)
+--------------------
+Button, Input, Navbar, Sidebar, Card, Modal
+Purpose:
+Use same components everywhere so design remains consistent across pages.
+
+
+Design Guidelines
+--------------------
+- Colors:
+    Primary: #2DFFEA
+    Primary Gradient: #2DFFEA → #22D3EE
+    Main Background: #082226
+    Secondary Background: #051518
+    Text Light: #FFFFFF
+    Text Gray: #94A3B8
+    Text Dark: #082226
+    Success: #00A63E
+
+- Font: 
+    Inter (Google Fonts)
+    H1: 30px bold
+    H2: 24px bold
+    Body: 16px regular
+    Small Text: 14px semibold
+    Caption: 12px regular
+        
+- Section gap: 32px
+- Standard page padding: 24px
+- Border Radius: rounded-xl
+- Always reuse shared components, no copy-paste
+
+Workflow Recommendations
+---------------------------
+1. Build static UI first (Before making a new UI element: Check if same element already exists elsewhere first.)
+2. Make responsive
+3. Connect pages with React Router
+4. Backend integration later
+
+- Remember to pull latest develop before starting
+
+
+Commit Rules
+---------------------------
+Good commit examples:
+- feat: add sign in page
+- feat: create dashboard cards
+- fix: correct navbar spacing
+
+Avoid:
+- done
+- final
+- latest changes
+
+
+NPM Commands
+---------------
+npm install
+npm run dev
