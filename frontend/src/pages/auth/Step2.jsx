@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
-import "./Step2.css";   // external CSS
+import "./Step2.css";   
 
 export default function Step2() {
   const navigate = useNavigate();
