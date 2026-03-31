@@ -1,5 +1,6 @@
 /* App wide common layout styles */
 
+
 .page-container {
   display: flex;
   flex-direction: column;
