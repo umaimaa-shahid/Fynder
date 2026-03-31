@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import Footer from "../../components/Footer";
-import "./SignIn.css";   // external CSS
+import "./SignIn.css";   
 
 export default function SignIn() {
   return (
