@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
-import "./SignUp.css";   // external CSS
+import "./SignUp.css";   
 
 export default function SignUp() {
   const navigate = useNavigate();
