@@ -2,8 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Layout from './components/Layout';
 import Chat from './pages/group/Chat';
 import MyGroup from './pages/group/MyGroup';
-import Profile from './pages/profile/Profile';
-import Settings from './pages/settings/Settings';
+import Profile from './pages/group/Profile';
+import Settings from './pages/group/Settings';
 
 // Auth pages
 import Home from "./pages/auth/HomePage";
