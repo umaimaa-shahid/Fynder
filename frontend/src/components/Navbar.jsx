@@ -1,26 +1,30 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import "../App.css";
 
 const Header = () => {
   return (
-    <header className="bg-darkgreen-1000 text-white px-6 py-4 flex justify-between items-center shadow">
-      {}
-      <div className="flex items-center space-x-2">
-       <div className="logo-icon" style={{width: 32, height: 32}}>F</div>
+    <header className="header" style={{background: 'transparent', boxShadow: 'none'}}>
+      <Link to="/" className="header-left">
+        <div className="logo-icon" style={{background: '#2dd4bf', color: '#082226'}}>F</div>
+        <div className="logo-text">Fynder</div>
+      </Link>
 
-        <Link to="/" className="text-2xl font-bold text-teal-200">
-          Fynder
-        </Link>
-      </div>
-
-      {}
-      <nav className="flex gap-6 items-center">
-        <Link to="/login" className="hover:text-teal-300">
+      <nav className="header-actions">
+        <Link to="/login" style={{color: 'white', textDecoration: 'none', fontWeight: 600, fontSize: '14px'}}>
           Log In
         </Link>
         <Link
           to="/signup"
-          className="bg-teal-400 text-gray-900 px-4 py-2 rounded hover:bg-teal-300 font-semibold"
+          style={{
+            background: '#2dd4bf', 
+            color: '#082226', 
+            padding: '8px 16px', 
+            borderRadius: '9999px',
+            textDecoration: 'none',
+            fontWeight: 600,
+            fontSize: '14px'
+          }}
         >
           Sign Up
         </Link>

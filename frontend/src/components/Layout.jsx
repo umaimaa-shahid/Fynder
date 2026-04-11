@@ -8,8 +8,8 @@ export default function Layout() {
     { name: 'Dashboard', path: '/app/dashboard', icon: LayoutDashboard },
     { name: 'Search', path: '/app/search', icon: Search },
     { name: 'Requests', path: '/app/requests', icon: Bell },
-    { name: 'Groups', path: '/app/groups', icon: Users },
-    { name: 'Chat', path: '/app/chat', icon: MessageSquare },
+    { name: 'Groups', path: '/app/group', icon: Users },
+    { name: 'Chat', path: '/app/group/chat', icon: MessageSquare },
   ];
 
   return (
@@ -26,8 +26,8 @@ export default function Layout() {
             </Link>
           ))}
           <div className="flex gap-4 items-center border-l border-white/10 pl-6 ml-2">
-            <User size={20} className="text-gray-400 cursor-pointer" />
-            <Settings size={20} className="text-gray-400 cursor-pointer" />
+            <Link to="/app/profile"><User size={20} className="text-gray-400 hover:text-[#2DFFEA] cursor-pointer transition-colors" /></Link>
+            <Link to="/app/settings"><Settings size={20} className="text-gray-400 hover:text-[#2DFFEA] cursor-pointer transition-colors" /></Link>
           </div>
         </nav>
       </header>

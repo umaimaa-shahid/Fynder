@@ -42,7 +42,9 @@ export default function SignIn() {
             </Link>
           </div>
 
-          <button className="signin-button">Sign In →</button>
+          <Link to="/app" style={{width: '100%', textDecoration: 'none'}}>
+            <button className="signin-button">Sign In →</button>
+          </Link>
 
           <p className="signin-footer-text">
             Don't have an account?{" "}
@@ -50,6 +52,9 @@ export default function SignIn() {
               Sign up
             </Link>
           </p>
+        </div>
+        <div className="signin-secure-text">
+          🔒 Secure login for FAST-NU students only
         </div>
       </div>
 

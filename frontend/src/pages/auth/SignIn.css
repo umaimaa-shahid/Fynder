@@ -35,49 +35,54 @@
   
   .signin-form-wrapper {
     display: flex;
+    flex-direction: column;
     flex-grow: 1;
     align-items: center;
     justify-content: center;
     padding: 1rem;
   }
   .signin-form {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    background: transparent;
+    border: 1px solid rgba(45, 255, 234, 0.4);
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     width: 100%;
     max-width: 28rem;
-    padding: 2rem;
+    padding: 2.5rem;
   }
   
   
   .signin-title {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: bold;
-    color: #082226;
+    color: white;
     margin-bottom: 0.5rem;
   }
   .signin-subtitle {
-    color: #4b5563; 
-    margin-bottom: 1.5rem;
+    color: #9ca3af; 
+    margin-bottom: 2rem;
   }
   
  
   .signin-label {
     display: block;
-    color: #374151;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
     margin-bottom: 0.5rem;
   }
   .signin-input {
     width: 100%;
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    background: #e5e7eb; 
-    color: white;
-    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    background: white; 
+    color: #111827;
+    margin-bottom: 1.25rem;
     outline: none;
+    border: none;
   }
   .signin-input:focus {
-    border: 2px solid #2dd4bf; 
+    outline: 2px solid #2dd4bf; 
   }
   
 
@@ -86,7 +91,7 @@
     justify-content: space-between;
     align-items: center;
     font-size: 0.875rem;
-    color: #6b7280; 
+    color: #e5e7eb; 
     margin-bottom: 1.5rem;
   }
   .signin-remember {
@@ -98,11 +103,12 @@
     accent-color: #2dd4bf;
   }
   .signin-forgot {
-    color: #6b7280;
+    color: #2dd4bf;
+    font-weight: 600;
     text-decoration: none;
   }
   .signin-forgot:hover {
-    color: #2dd4bf;
+    color: white;
   }
   
   .signin-button {
@@ -110,8 +116,11 @@
     background: #2dd4bf;
     color: #111827;
     font-weight: 600;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
+    font-size: 1rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
     transition: background 0.2s ease;
   }
   .signin-button:hover {
@@ -120,16 +129,23 @@
   
   
   .signin-footer-text {
-    color: #6b7280;
+    color: #9ca3af;
     font-size: 0.875rem;
     margin-top: 1.5rem;
     text-align: center;
   }
   .signin-signup {
     color: #2dd4bf;
+    font-weight: 600;
     text-decoration: none;
   }
   .signin-signup:hover {
-    color: #2dd4bf;
+    color: white;
   }
-  
+
+  .signin-secure-text {
+    margin-top: 2rem;
+    color: #9ca3af;
+    font-size: 0.875rem;
+    text-align: center;
+  }

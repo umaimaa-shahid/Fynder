@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
   ShieldCheckIcon,
   SparklesIcon,
@@ -10,7 +10,6 @@ import {
 import { Link } from "react-router-dom";
 import Header from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import Button from "../../components/Button";
 import "./HomePage.css";   
 
 const HomePage = () => {
@@ -20,19 +19,19 @@ const HomePage = () => {
 
       {/* Hero Section */}
       <section className="hero">
-        <h1 className="hero-title">Find Your Perfect FYP Partner</h1>
+        <h1 className="hero-title">Find Your Perfect <span>FYP Partner</span></h1>
         <p className="hero-subtitle">
           Stop wasting time in WhatsApp groups. Connect with compatible teammates
           through AI-powered matching and verified university profiles.
         </p>
         <Link to="/signup">
-          <Button label="Get Started Free →" />
+          <button className="cta-button" style={{ marginBottom: '2rem' }}>Get Started Free →</button>
         </Link>
         <div className="hero-features">
-          <div>✓ AI-powered compatibility scoring</div>
-          <div>✓ Real-time chat & notifications</div>
-          <div>✓ Secure university verification</div>
-          <div>✓ Advanced search filters</div>
+          <div><SparklesIcon width={20} /> AI Scoring</div>
+          <div><ChatBubbleLeftRightIcon width={20} /> Real-time Chat</div>
+          <div><ShieldCheckIcon width={20} /> Verified Users</div>
+          <div><MagnifyingGlassIcon width={20} /> Smart Filters</div>
         </div>
       </section>
 
@@ -47,32 +46,32 @@ const HomePage = () => {
           <FeatureCard
             icon={<ShieldCheckIcon className="icon" />}
             title="Verified Platform"
-            description="Secure registration via university email. Only real students can join."
+            description="Secure registration via university email. Only real students can join the network."
           />
           <FeatureCard
             icon={<SparklesIcon className="icon" />}
             title="AI-Powered Matching"
-            description="Smart recommendations based on skills, interests, and compatibility."
+            description="Smart recommendations based on your unique skills, interests, and compatibility."
           />
           <FeatureCard
             icon={<MagnifyingGlassIcon className="icon" />}
             title="Advanced Search"
-            description="Filter by skills, domain, batch, and availability status."
+            description="Filter candidates by specific skills, project domain, batch, and availability."
           />
           <FeatureCard
             icon={<UserGroupIcon className="icon" />}
             title="Group Management"
-            description="Create and manage FYP teams with up to 3 members."
+            description="Create, organize, and manage your ultimate FYP teams with up to 3 members."
           />
           <FeatureCard
             icon={<ChatBubbleLeftRightIcon className="icon" />}
             title="Built-in Chat"
-            description="Communicate directly without switching to external apps."
+            description="Communicate directly with potential partners without needing external apps."
           />
           <FeatureCard
             icon={<LightBulbIcon className="icon" />}
             title="Project Ideas"
-            description="AI-generated FYP ideas based on your group's strengths."
+            description="Discover AI-generated FYP ideas tailored specifically to your group's strengths."
           />
         </div>
       </section>
@@ -80,29 +79,27 @@ const HomePage = () => {
       {/* Steps Section */}
       <section className="steps">
         <h2 className="steps-title">How It Works</h2>
-        <p className="steps-subtitle">Get started in just four simple steps</p>
-
-        <div className="steps-line"></div>
+        <p className="steps-subtitle">Start collaborating in four simple steps</p>
 
         <div className="steps-grid">
-          <StepCard number="01" title="Sign Up" description="Register with your university email and verify your account." />
-          <StepCard number="02" title="Create Profile" description="Add your skills, interests, and preferred FYP domains." />
-          <StepCard number="03" title="Find Partners" description="Get AI recommendations or search manually for compatible teammates." />
-          <StepCard number="04" title="Form Team" description="Send requests, chat, and build your perfect FYP group." />
+          <StepCard number="1" title="Sign Up" description="Register with your university email and verify your student account." />
+          <StepCard number="2" title="Create Profile" description="Add your technical skills, interests, and preferred FYP domains." />
+          <StepCard number="3" title="Find Partners" description="Get precise AI recommendations or search manually for teammates." />
+          <StepCard number="4" title="Form Team" description="Send requests, start chatting, and build your perfect project group." />
         </div>
       </section>
 
       {/* CTA Section */}
       <section className="cta-wrapper">
-        <section className="cta">
+        <div className="cta">
           <h2 className="cta-title">Ready to Find Your Team?</h2>
           <p className="cta-subtitle">
-            Join hundreds of students who have already found their perfect FYP partners
+            Join hundreds of students who have already found their perfect FYP partners.
           </p>
           <Link to="/signup">
             <button className="cta-button">Start Matching Today →</button>
           </Link>
-        </section>
+        </div>
       </section>
 
       <Footer />
@@ -110,13 +107,26 @@ const HomePage = () => {
   );
 };
 
-const FeatureCard = ({ icon, title, description }) => (
-  <div className="feature-card">
-    {icon}
-    <h3 className="feature-title">{title}</h3>
-    <p className="feature-description">{description}</p>
-  </div>
-);
+const FeatureCard = ({ icon, title, description }) => {
+  const cardRef = useRef(null);
+
+  const handleMouseMove = (e) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    cardRef.current.style.setProperty('--mouse-x', `${x}px`);
+    cardRef.current.style.setProperty('--mouse-y', `${y}px`);
+  };
+
+  return (
+    <div className="feature-card" ref={cardRef} onMouseMove={handleMouseMove}>
+      {icon}
+      <h3 className="feature-title">{title}</h3>
+      <p className="feature-description">{description}</p>
+    </div>
+  );
+};
 
 const StepCard = ({ number, title, description }) => (
   <div className="step-card">
