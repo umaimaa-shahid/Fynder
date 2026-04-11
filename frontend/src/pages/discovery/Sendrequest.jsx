@@ -1,37 +1,95 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import Card from '../../components/Card';
-import Button from '../../components/Button';
+import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { CheckCircle2 } from 'lucide-react';
 
-export default function SendRequest() {
+const SendMessage = () => {
+  const { state } = useLocation();
   const navigate = useNavigate();
+  const student = state?.student || { name: 'Student', id: 'N/A', dept: 'N/A', initials: '??' };
+
+  const [message, setMessage] = useState('');
+  const [sent, setSent] = useState(false);
+
+function handleSend() {
+    setSent(true);
+    setTimeout(() => {
+      const today = new Date().toLocaleDateString('en-US', {
+        month: 'long', day: 'numeric', year: 'numeric',
+      });
+      
+      navigate('/app/requests', {
+        state: {
+          openTab: 'sent', // Tells Requests.jsx to switch tabs
+          newEntry: {
+            initials: student.initials || '??',
+            bg: '#2DFFEA',
+            name: student.name,
+            id: student.id,
+            dept: student.dept,
+            sentOn: today,
+          },
+        },
+      });
+    }, 1500);
+  }
 
   return (
-    <div className="p-8 flex justify-center items-center min-h-[80vh] bg-[#082226]">
-      <Card className="p-8 max-w-md w-full text-center border-[#2DFFEA33] bg-[#051518]">
-        <div className="w-20 h-20 bg-[#2DFFEA1A] text-[#2DFFEA] rounded-full flex items-center justify-center text-3xl mx-auto mb-6 border border-[#2DFFEA33] shadow-[0_0_20px_rgba(45,255,234,0.1)]">
-          ✉️
+    <div className="max-w-xl mx-auto">
+      {!sent ? (
+        <div className="bg-[#0a272b] p-8 rounded-3xl border border-white/10">
+          <h2 className="text-2xl font-bold mb-1 text-[#2DFFEA]">
+            Message {student.name}
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            {student.id} &nbsp;•&nbsp; {student.dept}
+          </p>
+          <textarea
+            value={message}
+            onChange={e => setMessage(e.target.value)}
+            className="w-full h-40 bg-[#081518] border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-[#2DFFEA] mb-6"
+            placeholder="Type your message..."
+          />
+          <div className="flex gap-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex-1 py-3 text-gray-400"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSend}
+              className="flex-1 py-3 bg-[#2DFFEA] text-black font-bold rounded-xl"
+            >
+              Send
+            </button>
+          </div>
         </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Send Partner Request?</h2>
-        <p className="text-gray-400 mb-8 text-sm px-4">
-          You are sending a request to <b className="text-white">Fatima Malik</b>. They will be notified immediately.
-        </p>
-        
-        <div className="flex gap-4">
-          <button 
-            className="flex-1 py-3 rounded-xl border border-[#22D3EE33] text-gray-400 font-semibold hover:bg-[#2DFFEA0D] transition-all" 
-            onClick={() => navigate(-1)}
-          >
-            Cancel
-          </button>
-          <button 
-            className="flex-1 py-3 rounded-xl bg-[#2DFFEA] text-[#051518] font-bold shadow-[0_4px_15px_rgba(45,255,234,0.3)] hover:scale-[1.02] transition-all" 
-            onClick={() => alert('Sent!')}
-          >
-            Confirm
-          </button>
+      ) : (
+        /* ── Confirmation ── */
+        <div style={{ textAlign: 'center', paddingTop: 60 }}>
+          <div style={{
+            width: 80, height: 80, borderRadius: '50%',
+            background: 'rgba(45,255,234,0.12)',
+            border: '2px solid rgba(45,255,234,0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 24px',
+          }}>
+            <CheckCircle2 size={42} color="#2DFFEA" />
+          </div>
+          <h2 style={{ fontSize: 24, fontWeight: 700, color: '#fff', marginBottom: 10 }}>
+            Request Sent!
+          </h2>
+          <p style={{ color: '#94A3B8', fontSize: 14, lineHeight: 1.6, marginBottom: 6 }}>
+            Your partner request has been sent to{' '}
+            <strong style={{ color: '#2DFFEA' }}>{student.name}</strong>.
+          </p>
+          <p style={{ color: '#64748B', fontSize: 13 }}>
+            Taking you to your sent requests…
+          </p>
         </div>
-      </Card>
+      )}
     </div>
   );
-}
+};
+
+export default SendMessage;

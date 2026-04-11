@@ -7,37 +7,42 @@ const Recommendations = () => {
 
   const recommended = [
     { 
-      initials: 'FM', bg: '#7c3aed', name: 'Fatima Malik', id: '23L-0845', 
+      initials: 'FM', name: 'Fatima Malik', id: '23L-0945', 
       dept: 'Computer Science', batch: '2023', 
       skills: ['Python', 'Machine Learning', 'Data Science'], 
       interests: ['AI', 'Data Analytics'], available: true 
     },
     { 
-      initials: 'ZK', bg: '#0ea5e9', name: 'Zainab Khan', id: '23L-0967', 
-      dept: 'Computer Science', batch: '2023', 
-      skills: ['Flutter', 'Dart', 'Firebase'], 
-      interests: ['Mobile Apps', 'UI/UX'], available: true 
-    },
+      initials: 'HA', name: 'Hassan Ali', id: '23L-0956', 
+      dept: 'Software Engineering', batch: '2023', 
+      skills: ['React', 'Node.js', 'MongoDB'], 
+      interests: ['Web Development'], available: true 
+    }
   ];
 
   return (
-    <div className="p-4 md:p-8 space-y-6 bg-[#082226] min-h-screen text-white">
-      <h1 className="text-2xl md:text-3xl font-bold">Recommended Partners</h1>
+    <div className="p-4 md:p-8 space-y-8 bg-[#082226] min-h-screen text-white">
+      {/* 1. Static Header - No search input or filter button [cite: 96, 97] */}
+      <div className="space-y-2">
+        <h1 className="text-2xl md:text-3xl font-bold italic">Top Matches</h1>
+        <p className="text-gray-400 text-sm">Find FYP partners by skills, interests, or department</p>
+      </div>
 
-      {/* Tabs */}
+      {/* 2. Navigation Tabs [cite: 98] */}
       <div className="flex gap-3">
         <button 
-          onClick={() => navigate('/app/search')}
-          className="bg-transparent border border-[#22D3EE33] text-gray-400 px-5 py-2 rounded-full text-xs md:text-sm hover:text-white transition-colors"
+          onClick={() => navigate('/app/search')} // Navigates AWAY to the search page
+          className="bg-transparent border border-[#22D3EE33] text-gray-400 px-6 py-2 rounded-xl text-xs font-bold hover:text-white transition-colors"
         >
           All Students (4)
         </button>
-        <button className="bg-[#2DFFEA] text-[#051518] px-5 py-2 rounded-full font-bold text-xs md:text-sm shadow-[0_0_15px_rgba(45,255,234,0.3)]">
+        <button className="bg-[#2DFFEA] text-[#051518] px-6 py-2 rounded-xl font-bold text-xs shadow-[0_0_15px_rgba(45,255,234,0.3)]">
           Recommended (2)
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* 3. Pure Grid - Only student cards [cite: 103, 113] */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
         {recommended.map((student, i) => (
           <Card 
             key={i} 

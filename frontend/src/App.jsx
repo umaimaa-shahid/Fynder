@@ -23,6 +23,7 @@ import SendRequest from "./pages/discovery/SendRequest";
 import SendRequests from "./pages/discovery/SendRequests"; 
 
 import './App.css';
+import SendMessage from './pages/discovery/SendRequest';
 
 function App() {
   return (
@@ -49,7 +50,7 @@ function App() {
           <Route path="requests" element={<Requests />} />
           
           <Route path="send-request" element={<SendRequest />} /> 
-          <Route path="send-request-message" element={<SendRequests />} />
+          <Route path="send-request-message" element={<SendMessage />} />
 
           {/* Group & Profile Section */}
           <Route path="group" element={<MyGroup />} />

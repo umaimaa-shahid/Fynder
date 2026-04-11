@@ -1,172 +1,159 @@
-import { useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import AppNavbar from '../../components/Navbar';
-import AppFooter from '../../components/Footer';
-import StudentCard from '../../components/Card';
-import { Search, SlidersHorizontal } from 'lucide-react';
-
-const STUDENTS = [
-  {
-    initials: 'FM', bg: '#7c3aed',
-    name: 'Fatima Malik', id: '23L-0845',
-    dept: 'Computer Science', batch: '2023',
-    skills: ['Python', 'Machine Learning', 'Data Science'],
-    interests: ['AI', 'Data Analytics'],
-    available: true, recommended: true,
-  },
-  {
-    initials: 'AH', bg: '#0d9488',
-    name: 'Areej Hafeez', id: '23L-0956',
-    dept: 'Software Engineering', batch: '2023',
-    skills: ['React', 'Node.js', 'MongoDB'],
-    interests: ['Web Development'],
-    available: true, recommended: false,
-  },
-  {
-    initials: 'ZK', bg: '#0ea5e9',
-    name: 'Zainab Khan', id: '23L-0967',
-    dept: 'Computer Science', batch: '2023',
-    skills: ['Flutter', 'Dart', 'Firebase'],
-    interests: ['Mobile Apps', 'UI/UX'],
-    available: true, recommended: true,
-  },
-  {
-    initials: 'BA', bg: '#f59e0b',
-    name: 'Bilal Ahmed', id: '23L-0978',
-    dept: 'AI', batch: '2023',
-    skills: ['Computer Vision', 'Deep Learning', 'OpenCV'],
-    interests: ['AI', 'Computer Vision'],
-    available: true, recommended: false,
-  },
-];
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Filter } from 'lucide-react';
 
 export default function SearchFilter() {
-  const [searchParams]    = useSearchParams();
-  const initTab           = searchParams.get('tab') === 'recommended' ? 'recommended' : 'all';
-  const [tab, setTab]     = useState(initTab);
-  const [query, setQuery] = useState('');
-  const [open, setOpen]   = useState(true);
-  const [dept,  setDept]  = useState('');
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('all');
+  const [showFilters, setShowFilters] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dept, setDept] = useState('');
   const [batch, setBatch] = useState('');
   const [skill, setSkill] = useState('');
 
-  const pool = tab === 'recommended' ? STUDENTS.filter(s => s.recommended) : STUDENTS;
+  const students = [
+    { name: 'Fatima Malik', id: '23L-0945', initials: 'FM', dept: 'Computer Science', batch: '2023', skills: ['Python', 'Machine Learning', 'Data Science'], recommended: true },
+    { name: 'Hassan Ali', id: '23L-0956', initials: 'HA', dept: 'Software Engineering', batch: '2023', skills: ['React', 'Node.js', 'MongoDB'], recommended: true },
+    { name: 'Zainab Khan', id: '23L-0967', initials: 'ZK', dept: 'Computer Science', batch: '2023', skills: ['Flutter', 'Dart', 'Firebase'], recommended: false },
+    { name: 'Ali Hassan', id: '23L-0920', initials: 'AH', dept: 'Computer Science', batch: '2023', skills: ['Python', 'AI'], recommended: false }
+  ];
 
-  const results = useMemo(() => {
-    const q = query.toLowerCase();
-    return pool.filter(s => {
-      const mQ = !q || s.name.toLowerCase().includes(q) || s.skills.some(sk => sk.toLowerCase().includes(q)) || s.interests.some(i => i.toLowerCase().includes(q));
-      const mD = !dept  || s.dept.toLowerCase().includes(dept.toLowerCase());
-      const mB = !batch || s.batch.includes(batch);
-      const mS = !skill || s.skills.some(sk => sk.toLowerCase().includes(skill.toLowerCase()));
-      return mQ && mD && mB && mS;
-    });
-  }, [pool, query, dept, batch, skill]);
+  const filtered = students.filter(s => {
+    const matchesTab = activeTab === 'all' || s.recommended;
+    
+    // Normalize function to handle spaces and casing
+    const normalize = (text) => text.toString().toLowerCase().trim();
 
-  const recCount = STUDENTS.filter(s => s.recommended).length;
+    // Logic for Search Bar (Name or Skills)
+    const q = normalize(searchQuery);
+    const matchesSearch = q === '' || 
+                          normalize(s.name).includes(q) || 
+                          s.skills.some(sk => normalize(sk).includes(q));
+
+    // Logic for Department Filter
+    const d = normalize(dept);
+    const matchesDept = d === '' || normalize(s.dept).includes(d);
+
+    // Logic for Batch Filter
+    const b = normalize(batch);
+    const matchesBatch = b === '' || normalize(s.batch).includes(b);
+
+    // Logic for Skill Filter (Specific skill box)
+    const skBox = normalize(skill);
+    const matchesSkill = skBox === '' || s.skills.some(sk => normalize(sk).includes(skBox));
+
+    return matchesTab && matchesSearch && matchesDept && matchesBatch && matchesSkill;
+  });
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-body)', display: 'flex', flexDirection: 'column' }}>
-      <AppNavbar />
-
-      <main style={{ flex: 1, padding: '28px 32px', maxWidth: 1040, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
-
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#fff', marginBottom: 4 }}>Search Students</h1>
-        <p style={{ fontSize: 13, color: 'var(--text-placeholder)', marginBottom: 18 }}>
-          Find FYP partners by skills, interests, or department
-        </p>
-
-        {/* ── Tabs ── */}
-        <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-          {[
-            { key: 'all',         label: `All Students (${STUDENTS.length})` },
-            { key: 'recommended', label: `Recommended (${recCount})` },
-          ].map(({ key, label }) => (
-            <button key={key} onClick={() => setTab(key)} style={{
-              padding: '7px 16px', borderRadius: 8, cursor: 'pointer',
-              fontSize: 13, fontWeight: 500, background: 'transparent',
-              border: `1px solid ${tab === key ? '#2DFFEA' : 'rgba(34,211,238,0.2)'}`,
-              color: tab === key ? '#2DFFEA' : 'var(--text-muted)',
-            }}>{label}</button>
-          ))}
-        </div>
-
-        {/* ── Search bar ── */}
-        <div style={{ position: 'relative', marginBottom: 14 }}>
-          <Search size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-placeholder)' }} />
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Search by name, skills, or interests..."
-            style={{
-              width: '100%', boxSizing: 'border-box',
-              padding: '10px 130px 10px 38px',
-              background: 'var(--bg-card)', border: '1px solid var(--accent-cyan-border)',
-              borderRadius: 10, color: '#fff', fontSize: 13,
-            }}
+    <div className="space-y-6 max-w-6xl mx-auto p-6">
+      <h1 className="text-3xl font-bold italic text-white">Search Students</h1>
+      
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <input 
+            type="text" 
+            placeholder="Search by name, skills or interests..." 
+            className="w-full bg-[#0a2a2e] border border-white/10 rounded-xl py-3 px-10 text-sm text-white focus:border-[#2DFFEA] outline-none"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)} 
           />
-          <button onClick={() => setOpen(v => !v)} style={{
-            position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-            display: 'flex', alignItems: 'center', gap: 6, padding: '5px 13px', borderRadius: 7,
-            background: 'rgba(45,255,234,0.08)', border: '1px solid rgba(45,255,234,0.25)',
-            color: '#2DFFEA', cursor: 'pointer', fontSize: 12, fontWeight: 500,
-          }}>
-            <SlidersHorizontal size={13} /> Filters
-          </button>
+          <Search className="absolute left-3 top-3 text-gray-500" size={18} />
         </div>
+        <button 
+          onClick={() => setShowFilters(!showFilters)}
+          className={`bg-[#0a2a2e] border ${showFilters ? 'border-[#2DFFEA] text-[#2DFFEA]' : 'border-white/10 text-gray-400'} rounded-xl px-4 py-3 text-sm flex items-center gap-2 hover:border-[#2DFFEA] transition-all`}
+        >
+          <Filter size={18} /> Filters
+        </button>
+      </div>
 
-        {/* ── Filter panel ── */}
-        {open && (
-          <div style={{
-            background: 'var(--bg-card)', border: '1px solid var(--accent-cyan-border)',
-            borderRadius: 12, padding: '16px 18px', marginBottom: 18,
-          }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 14 }}>
-              {[
-                { label: 'Department', val: dept,  set: setDept,  ph: 'e.g. BCS'  },
-                { label: 'Batch',      val: batch, set: setBatch, ph: 'e.g. 2023' },
-                { label: 'Skill',      val: skill, set: setSkill, ph: 'e.g. Web'  },
-              ].map(({ label, val, set, ph }) => (
-                <div key={label}>
-                  <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 5 }}>{label}</label>
-                  <input
-                    value={val} onChange={e => set(e.target.value)} placeholder={ph}
-                    style={{
-                      width: '100%', boxSizing: 'border-box', padding: '8px 12px',
-                      background: 'var(--bg-body)', border: '1px solid var(--accent-cyan-border)',
-                      borderRadius: 8, color: '#fff', fontSize: 12,
-                    }}
-                  />
-                </div>
-              ))}
+      {showFilters && (
+        <div className="p-6 bg-[#0a2a2e] border border-[#2DFFEA]/20 rounded-2xl grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-400 uppercase">Department</label>
+            <input 
+              type="text" 
+              placeholder="e.g. Computer Science" 
+              className="w-full bg-white rounded-lg p-2.5 text-black text-sm outline-none" 
+              value={dept}
+              onChange={(e) => setDept(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-400 uppercase">Batch</label>
+            <input 
+              type="text" 
+              placeholder="e.g. 2023" 
+              className="w-full bg-white rounded-lg p-2.5 text-black text-sm outline-none" 
+              value={batch}
+              onChange={(e) => setBatch(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-400 uppercase">Skill</label>
+            <input 
+              type="text" 
+              placeholder="e.g. React" 
+              className="w-full bg-white rounded-lg p-2.5 text-black text-sm outline-none" 
+              value={skill}
+              onChange={(e) => setSkill(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-4 mt-2">
+            <button onClick={() => setShowFilters(false)} className="bg-[#2DFFEA] text-black px-6 py-2 rounded-lg font-bold text-xs">Apply</button>
+            <button 
+              onClick={() => { setDept(''); setBatch(''); setSkill(''); setSearchQuery(''); }} 
+              className="text-red-400 px-6 py-2 text-xs font-bold"
+            >
+              Reset All
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="flex gap-4 border-b border-white/5">
+        <button onClick={() => setActiveTab('all')} className={`pb-3 text-sm font-bold ${activeTab === 'all' ? 'text-[#2DFFEA] border-b-2 border-[#2DFFEA]' : 'text-gray-500'}`}>
+          All Students ({students.length})
+        </button>
+        <button onClick={() => setActiveTab('recommended')} className={`pb-3 text-sm font-bold ${activeTab === 'recommended' ? 'text-[#2DFFEA] border-b-2 border-[#2DFFEA]' : 'text-gray-500'}`}>
+          Recommended (2)
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {filtered.length > 0 ? filtered.map(s => (
+          <div key={s.id} className="bg-[#0a2a2e] p-6 rounded-[24px] border border-white/5 relative group transition-all hover:border-[#2DFFEA]/30">
+            <span className="absolute top-6 right-6 bg-white text-black px-3 py-1 rounded-full text-[10px] font-bold">Available</span>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-14 h-14 bg-[#2DFFEA] text-[#051518] rounded-2xl flex items-center justify-center text-xl font-bold">{s.initials}</div>
+              <div>
+                <h3 className="text-xl font-bold text-white">{s.name}</h3>
+                <p className="text-xs text-gray-500">{s.id} • {s.dept} Batch {s.batch}</p>
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button style={{
-                padding: '7px 20px', borderRadius: 8,
-                background: 'linear-gradient(135deg,#2DFFEA,#22D3EE)',
-                color: '#051518', fontWeight: 600, fontSize: 13, border: 'none', cursor: 'pointer',
-              }}>Apply</button>
-              <button onClick={() => { setDept(''); setBatch(''); setSkill(''); }} style={{
-                padding: '7px 18px', borderRadius: 8, background: 'transparent',
-                border: '1px solid var(--accent-cyan-border)',
-                color: 'var(--text-muted)', fontSize: 13, cursor: 'pointer',
-              }}>Close</button>
+            <div className="mb-6">
+              <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Skills</p>
+              <div className="flex flex-wrap gap-2">
+                {s.skills.map(sk => (
+                  <span key={sk} className="bg-white/5 border border-white/10 text-gray-300 px-3 py-1 rounded-lg text-xs">{sk}</span>
+                ))}
+              </div>
             </div>
+            <button 
+              onClick={() => navigate('/app/send-request-message', { state: { student: s } })}
+              className="w-full bg-[#2DFFEA] text-[#051518] py-3.5 rounded-xl font-bold text-sm hover:brightness-110 transition-all"
+            >
+              🚀 Send Partner Request
+            </button>
+          </div>
+        )) : (
+          <div className="text-gray-500 col-span-2 text-center py-20 bg-[#0a2a2e]/50 rounded-3xl border border-dashed border-white/10">
+            No students found matching your search.
           </div>
         )}
-
-        {/* ── Result count ── */}
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 18 }}>
-          Showing&nbsp;<strong style={{ color: '#fff' }}>{results.length}</strong>&nbsp;results
-        </p>
-
-        {/* ── Grid ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 18 }}>
-          {results.map(s => <StudentCard key={s.id + s.name} student={s} />)}
-        </div>
-
-      </main>
-      <AppFooter />
+      </div>
     </div>
   );
 }

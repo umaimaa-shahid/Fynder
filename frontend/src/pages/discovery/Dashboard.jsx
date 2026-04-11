@@ -1,132 +1,135 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Eye, UserCheck, Clock } from 'lucide-react';
 
 const STATS = [
-  { icon: Eye,       value: 24, label: 'Profile Views',    iconBg: 'rgba(167,139,250,0.15)', iconColor: '#a78bfa' },
-  { icon: UserCheck, value: 5,  label: 'Requests Sent',    iconBg: 'rgba(45,255,234,0.15)',  iconColor: '#2DFFEA' },
-  { icon: Clock,     value: 3,  label: 'Pending Requests', iconBg: 'rgba(251,146,60,0.15)',  iconColor: '#fb923c' },
+  { icon: Eye,       value: 24, label: 'Profile Views',    bg: 'rgba(167,139,250,0.15)', color: '#a78bfa' },
+  { icon: UserCheck, value: 5,  label: 'Requests Sent',    bg: 'rgba(45,255,234,0.15)',  color: '#2DFFEA' },
+  { icon: Clock,     value: 3,  label: 'Pending Requests', bg: 'rgba(251,146,60,0.15)',  color: '#fb923c' },
 ];
 
 const TOP_MATCHES = [
-  { initials: 'FM', bg: '#7c3aed', name: 'Fatima Malik', id: '23L-0845', pct: 95, tags: ['Python', 'Machine Learning', 'Deep Learning'] },
-  { initials: 'HA', bg: '#0d9488', name: 'Hassan Ali',   id: '23L-0956', pct: 88, tags: ['React', 'Node.js', 'Machine Learning'] },
+  { initials:'FM', bg:'#7c3aed', name:'Fatima Malik', id:'23L-0945', pct:95, tags:['Python','Machine Learning','Deep Learning'] },
+  { initials:'HA', bg:'#0d9488', name:'Hassan Ali',   id:'23L-0956', pct:88, tags:['React','Node.js','Machine Learning']        },
 ];
 
-const RECENT_REQUESTS = [
-  { initials: 'AK', bg: '#0d9488', name: 'Ahmed Khan', id: '23L-0895', time: '2 hours ago' },
-  { initials: 'SA', bg: '#0d9488', name: 'Sara Ahmed',  id: '23L-0912', time: '5 hours ago' },
+const RECENT = [
+  { initials:'AK', bg:'#0d9488', name:'Ahmed Khan', id:'23L-0895', time:'2 hours ago' },
+  { initials:'SA', bg:'#0d9488', name:'Sara Ahmed',  id:'23L-0912', time:'5 hours ago' },
 ];
+
+const cyanTag = {
+  fontSize:11,padding:'2px 9px',borderRadius:4,
+  background:'rgba(45,255,234,0.09)',color:'#2DFFEA',
+  border:'1px solid rgba(45,255,234,0.22)',
+};
 
 export default function Dashboard() {
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen bg-[#082226] text-white flex flex-col">
-      <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
-        
-        {/* ── Welcome card (Responsive padding) ── */}
-        <div className="bg-gradient-to-br from-[#0d948821] to-[#2dffea0a] border border-[#22D3EE33] rounded-2xl p-6 md:p-8 mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-[#2DFFEA] mb-1">
-            Welcome, Umaima!
-          </h1>
-          <p className="text-xs md:text-sm text-gray-400 mb-6">
-            Here's what's happening with your FYP partner search
-          </p>
+    <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
 
-          {/* Stats Grid: 1 column on mobile, 3 columns on tablet+ */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            {STATS.map(({ icon: Icon, value, label, iconBg, iconColor }) => (
-              <div key={label} className="bg-[#0A2A2E] border border-[#22D3EE33] rounded-xl p-4 flex items-center gap-4">
-                <div style={{ background: iconBg }} className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0">
-                  <Icon size={18} color={iconColor} />
-                </div>
-                <div>
-                  <div className="text-xl md:text-2xl font-bold">{value}</div>
-                  <div className="text-[10px] md:text-xs text-gray-400 uppercase tracking-wider">{label}</div>
-                </div>
+      {/* ── Welcome card ── */}
+      <div style={{
+        background:'linear-gradient(135deg,rgba(13,148,136,0.13),rgba(45,255,234,0.04))',
+        border:'1px solid rgba(34,211,238,0.2)',
+        borderRadius:16, padding:'28px 32px',
+      }}>
+        <h1 style={{ fontSize:26, fontWeight:700, color:'#2DFFEA', margin:0, marginBottom:4 }}>
+          Welcome, Umaima!
+        </h1>
+        <p style={{ fontSize:13.5, color:'#94A3B8', margin:0, marginBottom:26 }}>
+          Here's what's happening with your FYP partner search
+        </p>
+
+        {/* Stats */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:14, marginBottom:28 }}>
+          {STATS.map(({ icon:Icon, value, label, bg, color }) => (
+            <div key={label} style={{
+              background:'#0A2A2E', border:'1px solid rgba(34,211,238,0.15)',
+              borderRadius:12, padding:'16px 18px',
+              display:'flex', alignItems:'center', gap:14,
+            }}>
+              <div style={{ width:42,height:42,borderRadius:10,background:bg,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center' }}>
+                <Icon size={20} color={color} strokeWidth={1.8} />
               </div>
-            ))}
-          </div>
-
-          {/* Profile Strength */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-end">
               <div>
-                <p className="font-semibold text-sm">Profile Strength</p>
-                <p className="text-[11px] text-gray-500">Complete your profile to get better matches</p>
+                <div style={{ fontSize:24,fontWeight:700,color:'#fff',lineHeight:1 }}>{value}</div>
+                <div style={{ fontSize:12,color:'#94A3B8',marginTop:3 }}>{label}</div>
               </div>
-              <span className="bg-[#2DFFEA1F] text-[#2DFFEA] text-xs font-bold px-3 py-1 rounded-full">85%</span>
             </div>
-            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-              <div className="w-[85%] h-full bg-gradient-to-r from-[#2DFFEA] to-[#22D3EE]" />
+          ))}
+        </div>
+
+        {/* Profile Strength */}
+        <div>
+          <div style={{ display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:8 }}>
+            <div>
+              <div style={{ fontWeight:600,fontSize:15,color:'#fff' }}>Profile Strength</div>
+              <div style={{ fontSize:12,color:'#64748B',marginTop:2 }}>Complete your profile to get better matches</div>
             </div>
+            <span style={{ background:'rgba(45,255,234,0.12)',color:'#2DFFEA',fontSize:12,fontWeight:700,padding:'3px 11px',borderRadius:20 }}>
+              85%
+            </span>
+          </div>
+          <div style={{ height:8,background:'rgba(255,255,255,0.08)',borderRadius:999,overflow:'hidden' }}>
+            <div style={{ width:'85%',height:'100%',background:'linear-gradient(90deg,#2DFFEA,#22D3EE)',borderRadius:999 }} />
           </div>
         </div>
+      </div>
 
-        {/* ── Bottom grid: Stack on mobile, side-by-side on large screens ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* ── Bottom grid ── */}
+      <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:20 }}>
 
-          {/* Top Matches Section */}
-          <section className="bg-[#0A2A2E] border border-[#22D3EE33] rounded-2xl p-5 md:p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="font-bold text-lg">Top Matches</h2>
-              <Link to="/app/recommended" className="text-sm text-[#2DFFEA] hover:underline">View all</Link>
-            </div>
-            <div className="space-y-4">
-              {TOP_MATCHES.map(m => (
-                <div key={m.id} 
-                  onClick={() => navigate('/app/send-request-message')} 
-                  className="bg-[#051518] hover:border-[#2DFFEA66] border border-transparent transition-all cursor-pointer rounded-xl p-4 flex justify-between items-start"
-                >
-                  <div className="flex gap-3">
-                    <div style={{ background: m.bg }} className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0">
-                      {m.initials}
-                    </div>
-                    <div>
-                      <p className="font-bold text-sm">{m.name}</p>
-                      <p className="text-[10px] text-gray-500 mb-2">{m.id}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {m.tags.map(t => (
-                          <span key={t} className="text-[9px] px-2 py-0.5 rounded bg-[#2DFFEA11] text-[#2DFFEA] border border-[#2DFFEA33]">
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+        {/* Top Matches */}
+        <div style={{ background:'#0A2A2E',border:'1px solid rgba(34,211,238,0.15)',borderRadius:14,padding:20 }}>
+          <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14 }}>
+            <span style={{ fontWeight:600,fontSize:15,color:'#fff' }}>Top Matches</span>
+            <Link to="/app/search" style={{ fontSize:13,color:'#2DFFEA',textDecoration:'none' }}>View all</Link>
+          </div>
+          {TOP_MATCHES.map(m => (
+            <div key={m.id} style={{
+              background:'#051518',borderRadius:10,padding:'12px 14px',marginBottom:10,
+              display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:10,
+            }}>
+              <div style={{ display:'flex',gap:10 }}>
+                <div style={{ width:34,height:34,borderRadius:'50%',background:m.bg,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:'#fff' }}>{m.initials}</div>
+                <div>
+                  <div style={{ fontWeight:600,fontSize:14,color:'#fff' }}>{m.name}</div>
+                  <div style={{ fontSize:11,color:'#64748B',marginBottom:6 }}>{m.id}</div>
+                  <div style={{ display:'flex',flexWrap:'wrap',gap:4 }}>
+                    {m.tags.map(t=><span key={t} style={cyanTag}>{t}</span>)}
                   </div>
-                  <span className="text-[#2DFFEA] font-bold text-sm">{m.pct}%</span>
                 </div>
-              ))}
+              </div>
+              <span style={{ fontSize:13,fontWeight:700,color:'#2DFFEA',flexShrink:0,paddingTop:2 }}>{m.pct}%</span>
             </div>
-          </section>
-
-          {/* Recent Requests Section */}
-          <section className="bg-[#0A2A2E] border border-[#22D3EE33] rounded-2xl p-5 md:p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="font-bold text-lg">Recent Requests</h2>
-              <Link to="/app/requests" className="text-sm text-[#2DFFEA] hover:underline">View all</Link>
-            </div>
-            <div className="space-y-4">
-              {RECENT_REQUESTS.map(r => (
-                <div key={r.id} className="bg-[#051518] rounded-xl p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div style={{ background: r.bg }} className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs">
-                      {r.initials}
-                    </div>
-                    <div>
-                      <p className="font-bold text-sm">{r.name}</p>
-                      <p className="text-[10px] text-gray-500">{r.id} • {r.time}</p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] bg-[#2DFFEA1F] text-[#2DFFEA] font-bold px-3 py-1 rounded-md">New</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
+          ))}
         </div>
-      </main>
+
+        {/* Recent Requests */}
+        <div style={{ background:'#0A2A2E',border:'1px solid rgba(34,211,238,0.15)',borderRadius:14,padding:20 }}>
+          <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14 }}>
+            <span style={{ fontWeight:600,fontSize:15,color:'#fff' }}>Recent Requests</span>
+            <Link to="/app/requests" style={{ fontSize:13,color:'#2DFFEA',textDecoration:'none' }}>View all</Link>
+          </div>
+          {RECENT.map(r => (
+            <div key={r.id} style={{
+              background:'#051518',borderRadius:10,padding:14,marginBottom:10,
+              display:'flex',alignItems:'center',justifyContent:'space-between',
+            }}>
+              <div style={{ display:'flex',alignItems:'center',gap:12 }}>
+                <div style={{ width:34,height:34,borderRadius:'50%',background:r.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:'#fff' }}>{r.initials}</div>
+                <div>
+                  <div style={{ fontWeight:600,fontSize:14,color:'#fff' }}>{r.name}</div>
+                  <div style={{ fontSize:11,color:'#64748B' }}>{r.id}</div>
+                  <div style={{ fontSize:11,color:'#64748B',marginTop:2 }}>{r.time}</div>
+                </div>
+              </div>
+              <span style={{ fontSize:11,fontWeight:600,padding:'3px 10px',borderRadius:6,background:'rgba(45,255,234,0.12)',color:'#2DFFEA' }}>New</span>
+            </div>
+          ))}
+        </div>
+
+      </div>
     </div>
   );
 }
