@@ -6,7 +6,7 @@ import Profile from './pages/group/Profile';
 import Settings from './pages/group/Settings';
 
 // Auth pages
-import Home from "./pages/auth/HomePage";
+import HomePage from "./pages/auth/HomePage";
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp"; 
 import EmailVerification from "./pages/auth/EmailVerification"; 
@@ -30,7 +30,7 @@ function App() {
     <Router>
       <Routes>
         {/* 🔹 AUTH ROUTES (Direct access, No Layout) */}
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/verify-email" element={<EmailVerification />} />
