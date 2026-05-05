@@ -1,6 +1,6 @@
 const router  = require('express').Router();
 const auth    = require('../middleware/auth');
-const Request = require('../models/Request');
+const Request = require('../models/request');
 const User    = require('../models/User');
 
 // ── POST /api/requests/send ────────────────────────────────────────

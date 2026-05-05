@@ -1,7 +1,7 @@
 const router  = require('express').Router();
 const auth    = require('../middleware/auth');
 const User    = require('../models/User');
-const Request = require('../models/Request');
+const Request = require('../models/request');
 
 // ── GET /api/dashboard ─────────────────────────────────────────────
 // Returns: stats (profile views placeholder, requests sent, pending),

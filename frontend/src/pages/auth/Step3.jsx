@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
-import "./Step3.css";   // external CSS
+import axios from "axios"; // ✅ added
+import "./Step3.css";
 
 export default function Step3() {
   const navigate = useNavigate();
@@ -32,13 +33,37 @@ export default function Step3() {
     }
   };
 
-  const handleComplete = () => {
+  // ✅ UPDATED FUNCTION ONLY
+  const handleComplete = async () => {
     if (selectedInterests.length === 0 || !availability) {
       alert("Please select at least one interest and set your availability.");
       return;
     }
-    alert("Profile setup complete!");
-    navigate("/Dashboard");
+
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        "http://localhost:5000/api/profile/step3",
+        {
+          interests: selectedInterests,
+          availability,
+          bio,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert("Profile setup complete!");
+      navigate("/Dashboard");
+
+    } catch (err) {
+      console.error(err);
+      alert("Error completing profile. Try again.");
+    }
   };
 
   const handleBack = () => {

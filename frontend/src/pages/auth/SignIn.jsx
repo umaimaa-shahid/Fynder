@@ -1,60 +1,59 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
+import axios from "axios";
 import "./SignIn.css";   
 
 export default function SignIn() {
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    try {
+      const res = await axios.post("http://localhost:5000/api/auth/login", {
+        email,
+        password,
+      });
+
+      // ✅ STORE TOKEN (MOST IMPORTANT LINE)
+      localStorage.setItem("token", res.data.token);
+
+      navigate("/");
+      
+    } catch (err) {
+      console.error(err);
+      alert("Login failed");
+    }
+  };
+
   return (
     <div className="signin-page">
-      {/* Logo */}
       <div className="signin-logo">
         <div className="logo-icon">F</div>
         <span className="logo-text">Fynder</span>
       </div>
 
-      {/* Form Section */}
       <div className="signin-form-wrapper">
         <div className="signin-form">
-          <h2 className="signin-title">Welcome Back</h2>
-          <p className="signin-subtitle">Sign in to find your FYP partners</p>
+          <h2>Welcome Back</h2>
 
-          <label className="signin-label">University Email</label>
           <input
             type="email"
             placeholder="you@nu.edu.pk"
-            className="signin-input"
+            onChange={(e) => setEmail(e.target.value)}
           />
 
-          <label className="signin-label">Password</label>
           <input
             type="password"
             placeholder="Enter your password"
-            className="signin-input"
+            onChange={(e) => setPassword(e.target.value)}
           />
 
-          <div className="signin-options">
-            <label className="signin-remember">
-              <input type="checkbox" className="signin-checkbox" />
-              Remember me
-            </label>
-            <Link to="/forgot" className="signin-forgot">
-              Forgot password?
-            </Link>
-          </div>
+          <button onClick={handleLogin}>Sign In →</button>
 
-          <Link to="/app" style={{width: '100%', textDecoration: 'none'}}>
-            <button className="signin-button">Sign In →</button>
-          </Link>
-
-          <p className="signin-footer-text">
-            Don't have an account?{" "}
-            <Link to="/signup" className="signin-signup">
-              Sign up
-            </Link>
-          </p>
-        </div>
-        <div className="signin-secure-text">
-          🔒 Secure login for FAST-NU students only
+          <Link to="/signup">Sign up</Link>
         </div>
       </div>
 

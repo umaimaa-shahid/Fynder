@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
+import axios from "axios"; // ✅ added
 import "./Step2.css";   
 
 export default function Step2() {
@@ -30,12 +31,32 @@ export default function Step2() {
     }
   };
 
-  const handleNext = () => {
+  // ✅ UPDATED FUNCTION ONLY
+  const handleNext = async () => {
     if (selectedSkills.length < 3) {
       alert("Please select at least 3 skills.");
       return;
     }
-    navigate("/profilesetup-step3");
+
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        "http://localhost:5000/api/profile/step2",
+        { skills: selectedSkills },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      navigate("/profilesetup-step3");
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save skills. Please try again.");
+    }
   };
 
   const handleBack = () => {

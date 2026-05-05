@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
+import axios from "axios"; // ✅ added
 import "./Step1.css";   
 
 export default function Step1() {
@@ -17,12 +18,32 @@ export default function Step1() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleNext = () => {
+  // ✅ UPDATED FUNCTION ONLY
+  const handleNext = async () => {
     if (!form.rollNumber || !form.department || !form.batch) {
       alert("Please fill in all required fields.");
       return;
     }
-    navigate("/profilesetup-step2");
+
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        "http://localhost:5000/api/profile/step1",
+        form,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      navigate("/profilesetup-step2");
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save data. Please try again.");
+    }
   };
 
   return (
