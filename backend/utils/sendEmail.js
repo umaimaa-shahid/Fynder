@@ -1,32 +1,26 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 const sendEmail = async (to, link) => {
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    if (!process.env.RESEND_API_KEY) {
+      console.log("Missing RESEND_API_KEY");
+      return;
+    }
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+    await resend.emails.send({
+      from: "Fynder <onboarding@resend.dev>",
       to,
       subject: "Verify Your Fynder Account",
-
       html: `
-        <h2>Email Verification</h2>
+        <h2>Welcome to Fynder</h2>
         <p>Click below to verify your account:</p>
         <a href="${link}">${link}</a>
       `,
     });
-
-    console.log("Email sent");
-
-  } catch (err) {
-    console.log("Email error:", err.message);
+  } catch (error) {
+    console.log("Email error:", error);
   }
 };
 

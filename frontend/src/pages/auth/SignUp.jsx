@@ -36,7 +36,6 @@ export default function SignUp() {
       );
 
       // save token
-      localStorage.setItem("token", res.data.token);
 
       // go to email verification
       navigate("/verify-email");

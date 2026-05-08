@@ -19,10 +19,10 @@ export const step1Profile = async (req, res) => {
       userId,
       {
         $set: {
-          "profile.rollNumber": rollNumber,
-          "profile.department": department,
-          "profile.batch": batch,
-          "profile.cgpa": cgpa,
+          "profile.rollNumber": req.body.rollNumber,
+          "profile.department": req.body.department,
+          "profile.batch": req.body.batch,
+          "profile.cgpa": req.body.cgpa,
         },
       },
       { new: true }
@@ -40,6 +40,7 @@ export const step1Profile = async (req, res) => {
 
 export const step2Profile = async (req, res) => {
   try {
+    console.log("USER:", req.user);
     const userId = req.user.id;
     const { skills } = req.body;
 

@@ -22,9 +22,13 @@ export default function SignIn() {
 
       // save token
       localStorage.setItem("token", res.data.token);
-
-      // go to app
-      navigate("/app/dashboard");
+      console.log("TOKEN SAVED:", res.data.token);
+      const user = res.data.user;
+      if (user.profile?.profileCompleted) {
+        navigate("/app/dashboard");
+      } else {
+        navigate("/profilesetup-step1");
+      }
 
     } catch (err) {
       console.log(err);
