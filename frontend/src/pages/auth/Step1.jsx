@@ -17,8 +17,6 @@ export default function Step1() {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-
-  // ✅ UPDATED FUNCTION ONLY
   const handleNext = async () => {
     if (!form.rollNumber || !form.department || !form.batch) {
       alert("Please fill in all required fields.");
