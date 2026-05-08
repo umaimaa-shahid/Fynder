@@ -1,56 +1,116 @@
 import User from "../models/User.js";
 
-// STEP 1
-export const saveStep1 = async (req, res) => {
+/* =========================
+   STEP 1
+========================= */
+export const step1Profile = async (req, res) => {
   try {
     const userId = req.user.id;
-
     const { rollNumber, department, batch, cgpa } = req.body;
 
-    await User.findByIdAndUpdate(userId, {
-      "profile.rollNumber": rollNumber,
-      "profile.department": department,
-      "profile.batch": batch,
-      "profile.cgpa": cgpa,
-    });
+    if (!rollNumber || !department || !batch) {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields missing",
+      });
+    }
 
-    res.json({ message: "Step 1 saved" });
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          "profile.rollNumber": rollNumber,
+          "profile.department": department,
+          "profile.batch": batch,
+          "profile.cgpa": cgpa,
+        },
+      },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Step 1 saved",
+      user,
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-export const saveStep2 = async (req, res) => {
-    try {
-      const userId = req.user.id;
-  
-      const { skills } = req.body;
-  
-      await User.findByIdAndUpdate(userId, {
-        "profile.skills": skills,
-      });
-  
-      res.json({ message: "Step 2 saved" });
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  };
+export const step2Profile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { skills } = req.body;
 
-  export const saveStep3 = async (req, res) => {
-    try {
-      const userId = req.user.id;
-  
-      const { interests, availability, bio } = req.body;
-  
-      await User.findByIdAndUpdate(userId, {
-        "profile.interests": interests,
-        "profile.availability": availability,
-        "profile.bio": bio,
-        "profile.profileCompleted": true,
+    if (!skills || skills.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Skills are required",
       });
-  
-      res.json({ message: "Profile completed" });
-    } catch (err) {
-      res.status(500).json({ message: err.message });
     }
-  };
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          "profile.skills": skills,
+        },
+      },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Step 2 saved successfully",
+      profile: user.profile,
+    });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+export const step3Profile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const { interests, availability, bio } = req.body;
+
+    if (!interests || interests.length === 0 || !availability) {
+      return res.status(400).json({
+        success: false,
+        message: "Interests and availability are required",
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          "profile.interests": interests,
+          "profile.availability": availability,
+          "profile.bio": bio,
+          "profile.profileCompleted": true,
+        },
+      },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Profile completed successfully",
+      profile: user.profile,
+    });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};

@@ -1,39 +1,65 @@
-// controllers/authController.js
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import sendEmail from "../utils/sendEmail.js";
 
-// SIGN UP
+// SIGNUP
 export const signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        message: "All fields are required",
+      });
+    }
+
     if (!email.endsWith("@lhr.nu.edu.pk")) {
-      return res.status(400).json({ message: "Use university email" });
+      return res.status(400).json({
+        message: "Use university email",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
+    }
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "User already exists",
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const token = crypto.randomBytes(32).toString("hex");
+    const verificationToken = crypto.randomBytes(32).toString("hex");
 
-    const user = await User.create({
+    await User.create({
       name,
       email,
       password: hashedPassword,
-      verificationToken: token,
+      verificationToken,
     });
 
-    const verifyLink = `http://localhost:5000/api/auth/verify/${token}`;
+    const verifyLink = `http://localhost:5000/api/auth/verify/${verificationToken}`;
 
     await sendEmail(email, verifyLink);
 
-    res.json({
-      message: "User created. Verification email sent.",
+    res.status(201).json({
+      success: true,
+      message: "Account created. Verification email sent.",
     });
+
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
 
@@ -45,17 +71,22 @@ export const verifyEmail = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid token" });
+      return res.status(400).json({
+        message: "Invalid or expired token",
+      });
     }
 
     user.isVerified = true;
-    user.verificationToken = null;
+    user.verificationToken = undefined;
 
     await user.save();
 
-    res.json({ message: "Email verified successfully" });
+    return res.redirect("http://localhost:3000/signin");
+
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      message: err.message,
+    });
   }
 };
 
@@ -64,26 +95,58 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "All fields are required",
+      });
+    }
+
     const user = await User.findOne({ email });
 
-    if (!user) return res.status(400).json({ message: "User not found" });
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found",
+      });
+    }
 
-    if (!user.isVerified)
-      return res.status(400).json({ message: "Verify email first" });
+    
 
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch)
-      return res.status(400).json({ message: "Invalid password" });
-
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+    const isMatch = await bcrypt.compare(
+      password,
+      user.password
     );
 
-    res.json({ token, user });
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Invalid password",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      token,
+
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        profile: user.profile,
+      },
+    });
+
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      message: err.message,
+    });
   }
 };
