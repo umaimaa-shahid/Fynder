@@ -22,6 +22,11 @@ export default function SignIn() {
 
       // save token
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("token",     res.data.token);
+      localStorage.setItem("userId",    res.data.user.id);
+      localStorage.setItem("userName",  res.data.user.name);
+      localStorage.setItem("userEmail", res.data.user.email);
+      
       console.log("TOKEN SAVED:", res.data.token);
       const user = res.data.user;
       if (user.profile?.profileCompleted) {
