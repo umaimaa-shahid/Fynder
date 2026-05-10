@@ -1,37 +1,42 @@
 import { useState, useEffect } from "react";
-import { Settings, UserPlus, Crown, ExternalLink } from "lucide-react";
+import { Settings, UserPlus, Crown, ExternalLink, MessageSquare, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../../utils/api";
 import "./MyGroup.css";
 
 export default function MyGroup() {
-  // Add these states at the top
-  const [showInvite, setShowInvite] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [showInvite, setShowInvite]       = useState(false);
+  const [searchQuery, setSearchQuery]     = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [searching, setSearching] = useState(false);
-  const [group, setGroup] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
-  const maxGroupSize = 3;
+  const [searching, setSearching]         = useState(false);
+  const [group, setGroup]                 = useState(null);
+  const [loading, setLoading]             = useState(true);
+  const [error, setError]                 = useState("");
+  const navigate                          = useNavigate();
+  const maxGroupSize                      = 3;
 
-  useEffect(() => {
-    api
-      .get("/group/me")
-      .then((res) => setGroup(res.data.group))
+  const loadGroup = () => {
+    setLoading(true);
+    api.get("/group/me")
+      .then((res) => {
+        setGroup(res.data.group);
+        setError("");
+      })
       .catch((err) => {
         if (err.response?.status === 404) setError("no-group");
         else setError("Failed to load group");
       })
       .finally(() => setLoading(false));
-  }, []);
+  };
 
+  useEffect(() => { loadGroup(); }, []);
+
+  // Search by name OR roll number
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     setSearching(true);
     try {
-      const res = await api.get(`/students?search=${searchQuery}`);
+      const res = await api.get(`/students?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchResults(res.data);
     } catch {
       setSearchResults([]);
@@ -51,12 +56,14 @@ export default function MyGroup() {
       alert(err.response?.data?.message || "Failed to invite member");
     }
   };
+
   const handleCreateGroup = async () => {
     const name = window.prompt("Enter your group name:");
     if (!name) return;
     try {
       const res = await api.post("/group/create", { name });
       setGroup(res.data.group);
+      setError("");
     } catch (err) {
       alert(err.response?.data?.message || "Failed to create group");
     }
@@ -66,17 +73,17 @@ export default function MyGroup() {
     localStorage.setItem(
       "chatWith",
       JSON.stringify({
-        userId: member._id,
-        name: member.name,
+        userId:     member._id,
+        name:       member.name,
         rollNumber: member.profile?.rollNumber || "",
-        lastMsg: "",
-        time: new Date(),
+        lastMsg:    "",
+        time:       new Date(),
       }),
     );
     navigate("/app/chat");
   };
 
-  if (loading) return <p className="text-muted">Loading...</p>;
+  if (loading) return <p className="text-muted" style={{ padding: 40 }}>Loading...</p>;
 
   if (error === "no-group")
     return (
@@ -85,13 +92,13 @@ export default function MyGroup() {
           <h1 className="page-title">My Group</h1>
           <p className="page-subtitle">You are not in a group yet</p>
         </div>
-        <div
-          className="card group-header-card"
-          style={{ alignItems: "center", gap: 16 }}
-        >
-          <p className="text-muted">
-            Create a group to get started with your FYP team.
-          </p>
+        <div className="card group-header-card" style={{ alignItems: "center", gap: 16 }}>
+          <div style={{ textAlign: "center" }}>
+            <Users size={48} color="#94A3B8" style={{ marginBottom: 12 }} />
+            <p className="text-muted" style={{ marginBottom: 16 }}>
+              Create a group to start your FYP team, or accept a partner request to be added to a group automatically.
+            </p>
+          </div>
           <button className="btn-primary" onClick={handleCreateGroup}>
             <UserPlus size={16} /> Create Group
           </button>
@@ -99,57 +106,60 @@ export default function MyGroup() {
       </div>
     );
 
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (error) return <p style={{ color: "red", padding: 40 }}>{error}</p>;
 
-  const myId = localStorage.getItem("userId");
-  const members = group.members || [];
+  const myId    = localStorage.getItem("userId");
+  const members = group?.members || [];
+  const isFull  = members.length >= maxGroupSize;
 
   return (
     <div className="group-page fade-in">
       <div className="group-hero">
         <h1 className="page-title">My Group</h1>
-        <p className="page-subtitle">
-          Manage your FYP team and collaborate effectively
-        </p>
+        <p className="page-subtitle">Manage your FYP team and collaborate effectively</p>
       </div>
 
+      {/* Group header card */}
       <div className="card group-header-card">
         <div className="group-header-top">
           <div>
-            <h2
-              className="text-white font-bold"
-              style={{ fontSize: 24, marginBottom: 4 }}
-            >
+            <h2 className="text-white font-bold" style={{ fontSize: 24, marginBottom: 4 }}>
               {group.name}
             </h2>
             <p className="text-muted" style={{ fontSize: 14 }}>
               Created{" "}
               {new Date(group.createdAt).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
+                year: "numeric", month: "long", day: "numeric",
               })}
             </p>
           </div>
+
           <div className="flex-row gap-3">
-            {group.leader?._id === myId && (
-              <button
-                className="btn-primary"
-                onClick={() => setShowInvite(true)}
-                disabled={members.length >= maxGroupSize}
-              >
+            {/* Group full badge */}
+            {isFull && (
+              <span style={{
+                padding: "6px 16px", borderRadius: 20, fontSize: 13, fontWeight: 600,
+                background: "rgba(0,166,62,0.12)", color: "#4ade80",
+                border: "1px solid rgba(74,222,128,0.25)",
+              }}>
+                ✓ Group Complete
+              </span>
+            )}
+
+            {/* Only leader can invite when group not full */}
+            {group.leader?._id === myId && !isFull && (
+              <button className="btn-primary" onClick={() => setShowInvite(true)}>
                 <UserPlus size={16} /> Invite Member
               </button>
             )}
           </div>
         </div>
 
+        {/* Progress bar */}
         <div className="group-size-container">
           <div className="group-size-info">
             <span className="group-size-label">Group Size</span>
-            <span className="group-size-count">
-              {members.length} / {maxGroupSize} members
-            </span>
+            <span className="group-size-count">{members.length} / {maxGroupSize} members</span>
           </div>
           <div className="progress-bar-bg">
             <div
@@ -159,15 +169,12 @@ export default function MyGroup() {
           </div>
           <div className="flex-row justify-between" style={{ marginTop: 8 }}>
             <span className="text-muted" style={{ fontSize: 14 }}>
-              {maxGroupSize - members.length > 0
-                ? `You can add ${maxGroupSize - members.length} more member`
-                : "Your group is full"}
+              {isFull
+                ? "Your group is complete — ready for FYP!"
+                : `You can add ${maxGroupSize - members.length} more member${maxGroupSize - members.length > 1 ? "s" : ""}`}
             </span>
-            {members.length < maxGroupSize && (
-              <span
-                className="badge badge-warning"
-                style={{ padding: "6px 16px" }}
-              >
+            {!isFull && (
+              <span className="badge badge-warning" style={{ padding: "6px 16px" }}>
                 Looking for Members
               </span>
             )}
@@ -175,20 +182,17 @@ export default function MyGroup() {
         </div>
       </div>
 
-      <h2 style={{ fontSize: 20, fontWeight: 600, color: "white" }}>
-        Team Members
-      </h2>
+      <h2 style={{ fontSize: 20, fontWeight: 600, color: "white" }}>Team Members</h2>
 
       <div className="members-grid">
         {members.map((member) => {
-          const p = member.profile || {};
+          const p        = member.profile || {};
           const initials = member.name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .slice(0, 2)
-            .toUpperCase();
-          const isLeader = group.leader?._id === member._id;
+            .split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+          const isLeader = group.leader?._id === member._id ||
+                           group.leader?._id?.toString() === member._id?.toString();
+          const isMe     = member._id?.toString() === myId ||
+                           member._id === myId;
 
           return (
             <div key={member._id} className="card member-card">
@@ -196,56 +200,54 @@ export default function MyGroup() {
                 <div className="member-avatar">{initials}</div>
                 <div className="member-info">
                   <div className="member-name-row">
-                    <span
-                      className="text-white"
-                      style={{ fontSize: 18, fontWeight: 600 }}
-                    >
-                      {member.name}
+                    <span className="text-white" style={{ fontSize: 18, fontWeight: 600 }}>
+                      {member.name} {isMe && <span style={{ fontSize: 12, color: "#94A3B8" }}>(You)</span>}
                     </span>
                     {isLeader && <Crown size={20} className="crown-icon" />}
                   </div>
-                  <span className="text-muted" style={{ fontSize: 14 }}>
-                    {p.rollNumber}
-                  </span>
+                  <span className="text-muted" style={{ fontSize: 14 }}>{p.rollNumber}</span>
+                  {p.department && (
+                    <span className="text-muted" style={{ fontSize: 12 }}>
+                      {p.department} · Batch {p.batch}
+                    </span>
+                  )}
                 </div>
               </div>
 
-              <div className="skills-row">
-                {(p.skills || []).map((skill) => (
-                  <span key={skill} className="badge">
-                    {skill}
-                  </span>
-                ))}
-              </div>
+              {(p.skills || []).length > 0 && (
+                <div className="skills-row">
+                  {(p.skills || []).map((skill) => (
+                    <span key={skill} className="badge">{skill}</span>
+                  ))}
+                </div>
+              )}
 
               <div className="flex-row gap-2" style={{ marginTop: "auto" }}>
                 <button
                   className="btn-outline"
                   style={{ gap: 6 }}
-                  onClick={() => {
-                    const myId = localStorage.getItem("userId");
-                    navigate(
-                      member._id === myId
-                        ? "/app/profile"
-                        : `/app/profile/${member._id}`,
-                    );
-                  }}
+                  onClick={() =>
+                    navigate(isMe ? "/app/profile" : `/app/profile/${member._id}`)
+                  }
                 >
-                  <ExternalLink size={16} /> View Profile
+                  <ExternalLink size={16} /> Profile
                 </button>
-                <button
-                  className="btn-primary"
-                  style={{ gap: 6 }}
-                  onClick={() => handleMessage(member)}
-                >
-                  Message
-                </button>
+                {!isMe && (
+                  <button
+                    className="btn-primary"
+                    style={{ gap: 6 }}
+                    onClick={() => handleMessage(member)}
+                  >
+                    <MessageSquare size={16} /> Message
+                  </button>
+                )}
               </div>
             </div>
           );
         })}
 
-        {members.length < maxGroupSize && (
+        {/* Empty slot cards */}
+        {!isFull && (
           <div className="card member-card add-member-card">
             <div className="add-icon-circle">
               <UserPlus size={24} />
@@ -253,98 +255,66 @@ export default function MyGroup() {
             <span className="text-muted" style={{ fontSize: 14 }}>
               Add a new member
             </span>
-            <button
-              className="btn-primary"
-              onClick={() => navigate("/app/search")}
-            >
+            <button className="btn-primary" onClick={() => navigate("/app/search")}>
               Find Partners
             </button>
           </div>
         )}
       </div>
 
+      {/* Invite Modal */}
       {showInvite && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.7)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            className="card"
-            style={{
-              width: 480,
-              padding: 32,
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-            }}
-          >
-            <h2
-              className="text-white"
-              style={{ fontSize: 20, fontWeight: 600 }}
-            >
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000,
+        }}>
+          <div className="card" style={{
+            width: 500, padding: 32,
+            display: "flex", flexDirection: "column", gap: 16,
+          }}>
+            <h2 className="text-white" style={{ fontSize: 20, fontWeight: 600 }}>
               Invite a Member
             </h2>
+            <p className="text-muted" style={{ fontSize: 13 }}>
+              Search by name or roll number (e.g. 23L-0893)
+            </p>
 
             <div className="flex-row gap-2">
               <input
-                className="form-input"
-                style={{ flex: 1 }}
-                placeholder="Search by name or roll number..."
+                style={{
+                  flex: 1, background: "white", borderRadius: 8, padding: "10px 14px",
+                  color: "#082226", fontSize: 14, border: "none", outline: "none",
+                }}
+                placeholder="Name or roll number..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
-              <button
-                className="btn-primary"
-                onClick={handleSearch}
-                disabled={searching}
-              >
+              <button className="btn-primary" onClick={handleSearch} disabled={searching}>
                 {searching ? "..." : "Search"}
               </button>
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 8,
-                maxHeight: 240,
-                overflowY: "auto",
-              }}
-            >
-              {searchResults.length === 0 && searchQuery && !searching && (
-                <p className="text-muted" style={{ fontSize: 14 }}>
-                  No students found
+            <div style={{
+              display: "flex", flexDirection: "column", gap: 8,
+              maxHeight: 280, overflowY: "auto",
+            }}>
+              {!searching && searchQuery && searchResults.length === 0 && (
+                <p className="text-muted" style={{ fontSize: 14, textAlign: "center", padding: 20 }}>
+                  No students found for "{searchQuery}"
                 </p>
               )}
               {searchResults.map((s) => (
-                <div
-                  key={s._id}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "10px 14px",
-                    borderRadius: 10,
-                    background: "var(--bg-deep)",
-                  }}
-                >
+                <div key={s._id} style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  padding: "12px 16px", borderRadius: 10, background: "var(--bg-deep)",
+                }}>
                   <div>
-                    <p
-                      className="text-white"
-                      style={{ fontWeight: 600, fontSize: 14 }}
-                    >
+                    <p className="text-white" style={{ fontWeight: 600, fontSize: 14 }}>
                       {s.name}
                     </p>
                     <p className="text-muted" style={{ fontSize: 12 }}>
-                      {s.profile?.rollNumber || s.email}
+                      {s.studentId || s.dept}
                     </p>
                   </div>
                   <button
