@@ -58,7 +58,10 @@ export default function EmailVerification() {
 
           {/* Continue Button */}
           <button
-            onClick={() => navigate("/profilesetup-step1")}
+            onClick={() => {
+              alert("Email verified? Now please login.");
+              navigate("/login");
+            }}
             className="w-full bg-teal-400 text-[#082226] font-semibold py-2 rounded hover:bg-teal-300 transition mb-4"
           >
             Continue to Profile Setup

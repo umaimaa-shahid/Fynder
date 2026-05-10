@@ -33,15 +33,24 @@ export default function Step2() {
 
   // ✅ UPDATED FUNCTION ONLY
   const handleNext = async () => {
+    const token = localStorage.getItem("token");
+    console.log("TOKEN IN STEP2:", token);
+
+    if (!token) {
+      alert("Session expired. Please login again.");
+      navigate("/login");
+      return;
+    }
     if (selectedSkills.length < 3) {
       alert("Please select at least 3 skills.");
       return;
     }
 
+  
+  
     try {
-      const token = localStorage.getItem("token");
-
-      await axios.post(
+      
+      const res = await axios.post(
         "http://localhost:5000/api/profile/step2",
         { skills: selectedSkills },
         {
@@ -50,15 +59,20 @@ export default function Step2() {
           },
         }
       );
-
-      navigate("/profilesetup-step3");
-
+  
+      console.log("SUCCESS:", res.data);
+  
+      if (res.data.success) {
+        navigate("/profilesetup-step3");
+      } else {
+        alert(res.data.message);
+      }
+  
     } catch (err) {
-      console.error(err);
+      console.error("STEP2 ERROR:", err.response?.data || err.message);
       alert("Failed to save skills. Please try again.");
     }
   };
-
   const handleBack = () => {
     navigate("/profilesetup-step1");
   };

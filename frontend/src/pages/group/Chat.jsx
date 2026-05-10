@@ -1,106 +1,148 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Search, Paperclip, Image as ImageIcon, Smile, Send } from 'lucide-react';
+import { io } from 'socket.io-client';
+import api from '../../utils/api';
 import './Chat.css';
 
-// Mock data for the sidebar conversations
-const initialConversations = [
-  {
-    id: 1,
-    name: "Areej Hafeez",
-    rollNumber: "23L-0956",
-    avatar: "AH",
-    lastMsg: "That sounds great! When can we start?",
-    time: "2 min ago",
-    unread: 2,
-    online: true,
-  },
-  {
-    id: 2,
-    name: "Zainab Khan",
-    rollNumber: "23L-0967",
-    avatar: "ZK",
-    lastMsg: "I'll send you the details soon",
-    time: "1 hour ago",
-    unread: 0,
-    online: false,
-  },
-  {
-    id: 3,
-    name: "Ahmed Khan",
-    rollNumber: "23L-0895",
-    avatar: "AK",
-    lastMsg: "Thanks for accepting my request!",
-    time: "3 hours ago",
-    unread: 0,
-    online: false,
-  }
-];
-
-// Mock data for active chat messages
-const initialMessages = [
-  { id: 1, sender: 'them', text: 'Hey! Did you check out the project ideas I sent?', time: '2:15 PM' },
-  { id: 2, sender: 'me', text: 'Yes! I really like the AI-powered study planner idea. We should discuss it further.', time: '2:20 PM' },
-  { id: 3, sender: 'them', text: 'Great! I was thinking we could use React for the frontend and Python with TensorFlow for the ML backend.', time: '2:25 PM' },
-  { id: 4, sender: 'me', text: 'Perfect match for our skills! When should we meet to plan this out?', time: '2:28 PM' },
-  { id: 5, sender: 'them', text: 'Sounds good! Lets discuss tomorrow', time: '2:30 PM' },
-];
+let socket;
 
 export default function Chat() {
-  // State variables for interactivity
-  const [activeChat, setActiveChat] = useState(initialConversations[0]);
-  const [messages, setMessages] = useState(initialMessages);
-  const [newMessage, setNewMessage] = useState("");
+  const [conversations, setConversations] = useState([]);
+  const [activeChat, setActiveChat]       = useState(null);
+  const [messages, setMessages]           = useState([]);
+  const [newMessage, setNewMessage]       = useState("");
+  const [loading, setLoading]             = useState(true);
+  const messagesEndRef                    = useRef(null);
+  const activeChatRef                     = useRef(null); // ref to access activeChat inside socket listener
+  const myId                              = localStorage.getItem("userId");
 
-  // Logic to handle sending a new message
+  // Connect socket ONCE
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    socket = io("http://localhost:5000", { auth: { token } });
+
+    socket.on("newMessage", (msg) => {
+      const current = activeChatRef.current;
+      const senderId   = msg.sender?._id || msg.sender;
+      const receiverId = msg.receiver?._id || msg.receiver;
+
+      const isRelevant =
+        (senderId === myId && receiverId === current?.userId) ||
+        (senderId === current?.userId && receiverId === myId);
+
+      if (isRelevant) {
+        setMessages(prev => {
+          // Replace optimistic or avoid duplicate
+          const withoutOptimistic = prev.filter(
+            m => !(typeof m._id === "number" && m.text === msg.text && m.sender === myId)
+          );
+          if (withoutOptimistic.find(m => m._id === msg._id)) return withoutOptimistic;
+          return [...withoutOptimistic, msg];
+        });
+      }
+    });
+
+    return () => socket.disconnect();
+  }, []); // empty — runs once only
+
+  // Keep ref in sync with activeChat state
+  useEffect(() => {
+    activeChatRef.current = activeChat;
+  }, [activeChat]);
+
+  // Handle chatWith from MyGroup navigation
+  useEffect(() => {
+    const chatWith = localStorage.getItem("chatWith");
+    if (chatWith) {
+      const parsed = JSON.parse(chatWith);
+      setActiveChat(parsed);
+      setConversations([parsed]);
+      localStorage.removeItem("chatWith");
+    }
+  }, []);
+
+  // Load conversations
+  useEffect(() => {
+    api.get("/chat/conversations")
+      .then(res => {
+        setConversations(prev => {
+          const apiConvos = res.data.conversations;
+          const merged = [...prev];
+          apiConvos.forEach(c => {
+            if (!merged.find(m => m.userId === c.userId)) merged.push(c);
+          });
+          return merged;
+        });
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Load messages when active chat changes
+  useEffect(() => {
+    if (!activeChat) return;
+    api.get(`/chat/${activeChat.userId}`)
+      .then(res => setMessages(res.data.messages))
+      .catch(() => setMessages([]));
+  }, [activeChat]);
+
+  // Auto-scroll
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   const handleSendMessage = () => {
-    if (newMessage.trim() === "") return;
+    if (!newMessage.trim() || !activeChat || !socket?.connected) return;
 
-    const newMsgObj = {
-      id: messages.length + 1,
-      sender: 'me',
-      text: newMessage,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) // e.g. "3:45 PM"
-    };
-
-    // Add the new message to the list and clear the input
-    setMessages([...messages, newMsgObj]);
+    const text = newMessage.trim();
     setNewMessage("");
+
+    const optimistic = {
+      _id: Date.now(),
+      sender: myId,
+      receiver: activeChat.userId,
+      text,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, optimistic]);
+
+    socket.emit("sendMessage", { receiverId: activeChat.userId, text });
   };
 
-  // Allow sending with the "Enter" key
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') handleSendMessage();
+    if (e.key === "Enter") handleSendMessage();
   };
+
+  const getInitials = (name = "") =>
+    name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
 
   return (
     <div className="chat-container">
-      {/* ---------------- SIDEBAR ---------------- */}
       <aside className="chat-sidebar card">
         <div className="search-box">
-          <Search size={20} className="text-muted" color="#94A3B8" />
+          <Search size={20} color="#94A3B8" />
           <input type="text" placeholder="Search conversations..." />
         </div>
 
         <div className="conversations-list">
-          {initialConversations.map(convo => (
-            <div 
-              key={convo.id} 
-              className={`conversation-card ${activeChat.id === convo.id ? 'active' : ''}`}
-              onClick={() => setActiveChat(convo)}
-            >
-              <div className="avatar">
-                {convo.avatar}
-                {convo.online && <div className="status-indicator" />}
-              </div>
-              <div className="convo-info flex-col">
+          {loading && <p className="text-muted" style={{padding:12}}>Loading...</p>}
+          {!loading && conversations.length === 0 &&
+            <p className="text-muted" style={{padding:12}}>No conversations yet</p>}
+          {conversations.map(convo => (
+            <div key={convo.userId}
+              className={`conversation-card ${activeChat?.userId === convo.userId ? 'active' : ''}`}
+              onClick={() => setActiveChat(convo)}>
+              <div className="avatar">{getInitials(convo.name)}</div>
+              <div className="convo-info">
                 <div className="convo-header">
                   <span className="convo-name">{convo.name}</span>
-                  {convo.unread > 0 && <span className="unread-badge">{convo.unread}</span>}
                 </div>
                 <div className="convo-id">{convo.rollNumber}</div>
-                <div className="convo-header" style={{marginTop: 4}}>
+                <div className="convo-header" style={{marginTop:4}}>
                   <span className="convo-msg">{convo.lastMsg}</span>
-                  <span className="convo-time">{convo.time}</span>
+                  <span className="convo-time">
+                    {new Date(convo.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                  </span>
                 </div>
               </div>
             </div>
@@ -108,59 +150,61 @@ export default function Chat() {
         </div>
       </aside>
 
-      {/* ---------------- MAIN CHAT AREA ---------------- */}
       <section className="chat-main card">
-        
-        {/* Header showing active person */}
-        <header className="chat-header">
-          <div className="avatar">
-            {activeChat.avatar}
-            {activeChat.online && <div className="status-indicator" />}
+        {!activeChat ? (
+          <div style={{flex:1, display:'flex', alignItems:'center', justifyContent:'center'}}>
+            <p className="text-muted">Select a conversation to start chatting</p>
           </div>
-          <div className="chat-header-info">
-            <h3 className="convo-name">{activeChat.name}</h3>
-            <span className="chat-header-status">{activeChat.online ? 'Active now' : 'Offline'}</span>
-          </div>
-        </header>
+        ) : (
+          <>
+            <header className="chat-header">
+              <div className="avatar">{getInitials(activeChat.name)}</div>
+              <div className="chat-header-info">
+                <h3 className="convo-name">{activeChat.name}</h3>
+                <span className="chat-header-status">{activeChat.rollNumber}</span>
+              </div>
+            </header>
 
-        {/* Messages List Area */}
-        <div className="chat-messages">
-          {messages.map((msg) => (
-            <div key={msg.id} className={`message-row ${msg.sender === 'me' ? 'sent' : 'received'}`}>
-              <div className="avatar" style={{width: 40, height: 40, fontSize: 14}}>
-                {msg.sender === 'me' ? 'US' : activeChat.avatar}
-              </div>
-              <div className="message-content">
-                <div className="message-bubble">{msg.text}</div>
-                <span className="message-time">{msg.time}</span>
-              </div>
+            <div className="chat-messages">
+              {messages.map((msg) => (
+                <div key={msg._id}
+                  className={`message-row ${
+                    msg.sender === myId || msg.sender?._id === myId ? 'sent' : 'received'
+                  }`}>
+                  <div className="avatar" style={{width:40, height:40, fontSize:14}}>
+                    {msg.sender === myId || msg.sender?._id === myId
+                      ? getInitials(localStorage.getItem("userName") || "Me")
+                      : getInitials(activeChat.name)}
+                  </div>
+                  <div className="message-content">
+                    <div className="message-bubble">{msg.text}</div>
+                    <span className="message-time">
+                      {new Date(msg.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
             </div>
-          ))}
-        </div>
 
-        {/* Input Area */}
-        <div className="chat-input-area">
-          <div className="chat-input-actions">
-            <Paperclip size={24} onClick={() => alert("Attach file clicked")} />
-            <ImageIcon size={24} onClick={() => alert("Send image clicked")} />
-            <Smile size={24} onClick={() => alert("Emojis clicked")} />
-          </div>
-          
-          <div className="chat-input-box">
-            <input 
-              type="text" 
-              placeholder="Type a message..." 
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={handleKeyPress}
-            />
-          </div>
-
-          <button className="btn-send" onClick={handleSendMessage}>
-            <Send size={20} />
-          </button>
-        </div>
-
+            <div className="chat-input-area">
+              <div className="chat-input-actions">
+                <Paperclip size={24} />
+                <ImageIcon size={24} />
+                <Smile size={24} />
+              </div>
+              <div className="chat-input-box">
+                <input type="text" placeholder="Type a message..."
+                  value={newMessage}
+                  onChange={e => setNewMessage(e.target.value)}
+                  onKeyDown={handleKeyPress} />
+              </div>
+              <button className="btn-send" onClick={handleSendMessage}>
+                <Send size={20} />
+              </button>
+            </div>
+          </>
+        )}
       </section>
     </div>
   );

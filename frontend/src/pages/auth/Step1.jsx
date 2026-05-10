@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
-import axios from "axios"; // ✅ added
-import "./Step1.css";   
+import axios from "axios";
+import "./Step1.css";
 
 export default function Step1() {
   const navigate = useNavigate();
@@ -17,16 +17,24 @@ export default function Step1() {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+
   const handleNext = async () => {
     if (!form.rollNumber || !form.department || !form.batch) {
       alert("Please fill in all required fields.");
       return;
     }
 
-    try {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
+    
+    console.log("TOKEN:", token);
 
-      await axios.post(
+    if (!token) {
+      alert("You are not logged in. Please login again.");
+      return;
+    }
+
+    try {
+      const res = await axios.post(
         "http://localhost:5000/api/profile/step1",
         form,
         {
@@ -34,13 +42,26 @@ export default function Step1() {
             Authorization: `Bearer ${token}`,
           },
         }
+        
       );
-
-      navigate("/profilesetup-step2");
+      console.log("SUCCESS:", res.data);
+      if (res.data.success) {
+        navigate("/profilesetup-step2");
+      } else {
+        alert(res.data.message);
+      }
+     
 
     } catch (err) {
-      console.error(err);
-      alert("Failed to save data. Please try again.");
+      console.error(
+        "STEP1 ERROR:",
+        err.response?.data || err.message
+      );
+
+      alert(
+        err.response?.data?.message ||
+        "Failed to save data. Please try again."
+      );
     }
   };
 
@@ -67,7 +88,9 @@ export default function Step1() {
       <div className="step1-form-wrapper">
         <div className="step1-form">
           <h2 className="step1-title">Basic Information</h2>
-          <p className="step1-subtitle">Tell us about your academic background</p>
+          <p className="step1-subtitle">
+            Tell us about your academic background
+          </p>
 
           <label className="step1-label">Roll Number</label>
           <input

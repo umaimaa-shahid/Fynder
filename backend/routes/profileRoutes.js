@@ -5,7 +5,7 @@ import {
   step3Profile,
 } from "../controllers/profileController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
-
+import User from "../models/User.js";
 const router = express.Router();
 
 router.post("/step1", authMiddleware, step1Profile,);
