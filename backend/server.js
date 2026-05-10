@@ -10,13 +10,13 @@ import { initSocket } from "./socket/index.js";
 import userRoutes    from "./routes/userRoutes.js";
 import groupRoutes   from "./routes/groupRoutes.js";
 import chatRoutes    from "./routes/chatRoutes.js";
-import authRoutes from "./routes/authRoutes.js";
+import authRoutes    from "./routes/authRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 
 // Our new routes
 import dashboardRoutes from "./routes/dashboard.js";
-import studentRoutes from "./routes/students.js";
-import requestRoutes from "./routes/requests.js";
+import studentRoutes   from "./routes/students.js";
+import requestRoutes   from "./routes/requests.js";
 
 dotenv.config();
 connectDB();
@@ -30,23 +30,18 @@ app.use(express.json());
 const httpServer = createServer(app);
 initSocket(httpServer);
 
-
-
 // ROUTES
-app.use("/api/auth", authRoutes);
-app.use("/api/profile", profileRoutes);
-<<<<<<< HEAD
+app.use("/api/auth",      authRoutes);
+app.use("/api/profile",   profileRoutes);
+app.use("/api/user",      userRoutes);
+app.use("/api/group",     groupRoutes);
+app.use("/api/chat",      chatRoutes);
 
 // Our new routes
 app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/students", studentRoutes);
-app.use("/api/requests", requestRoutes);
+app.use("/api/students",  studentRoutes);
+app.use("/api/requests",  requestRoutes);
 
-=======
-app.use("/api/user",    userRoutes);
-app.use("/api/group",   groupRoutes);
-app.use("/api/chat",    chatRoutes);
->>>>>>> e21f556965e5e4bddfdd97f91f5f6afdbfd3884a
 // TEST ROUTE
 app.get("/", (req, res) => {
   res.send("API is running...");
@@ -54,6 +49,7 @@ app.get("/", (req, res) => {
 
 // PORT
 const PORT = process.env.PORT || 5000;
+
 // SERVER
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
