@@ -13,17 +13,17 @@ export default function SignIn() {
   const handleLogin = async () => {
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        { email, password }
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        { email, password },
       );
 
       // save token AND user info
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("userId",    res.data.user.id);
-      localStorage.setItem("userName",  res.data.user.name);
+      localStorage.setItem("userId", res.data.user.id);
+      localStorage.setItem("userName", res.data.user.name);
       localStorage.setItem("userEmail", res.data.user.email);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-      
+
       console.log("TOKEN SAVED:", res.data.token);
       const user = res.data.user;
       if (user.profile?.profileCompleted) {
@@ -31,7 +31,6 @@ export default function SignIn() {
       } else {
         navigate("/profilesetup-step1");
       }
-
     } catch (err) {
       console.log(err);
       alert("Invalid email or password");
@@ -40,7 +39,6 @@ export default function SignIn() {
 
   return (
     <div className="signin-page">
-
       {/* Logo */}
       <div className="signin-logo">
         <div className="logo-icon">F</div>
@@ -49,14 +47,10 @@ export default function SignIn() {
 
       {/* Form Section */}
       <div className="signin-form-wrapper">
-
         <div className="signin-form">
-
           <h2 className="signin-title">Welcome Back</h2>
 
-          <p className="signin-subtitle">
-            Sign in to find your FYP partners
-          </p>
+          <p className="signin-subtitle">Sign in to find your FYP partners</p>
 
           <label className="signin-label">University Email</label>
           <input
@@ -100,17 +94,14 @@ export default function SignIn() {
               Sign up
             </Link>
           </p>
-
         </div>
 
         <div className="signin-secure-text">
           🔒 Secure login for FAST-NU students only
         </div>
-
       </div>
 
       <Footer />
-
     </div>
   );
 }

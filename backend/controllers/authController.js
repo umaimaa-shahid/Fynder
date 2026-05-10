@@ -46,7 +46,7 @@ export const signup = async (req, res) => {
       verificationToken,
     });
 
-    const verifyLink = `http://localhost:5000/api/auth/verify/${verificationToken}`;
+    const verifyLink = `${process.env.BACKEND_URL}/api/auth/verify/${verificationToken}`;
 
     await sendEmail(email, verifyLink);
 
@@ -81,7 +81,7 @@ export const verifyEmail = async (req, res) => {
 
     await user.save();
 
-    return res.redirect("http://localhost:3000/signin");
+    return res.redirect(process.env.FRONTEND_URL + "/signin");
 
   } catch (err) {
     res.status(500).json({

@@ -35,7 +35,7 @@ export default function Step1() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/profile/step1",
+        `${import.meta.env.VITE_API_URL}/api/profile/step1`,
         form,
         {
           headers: {

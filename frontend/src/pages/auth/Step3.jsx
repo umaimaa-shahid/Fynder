@@ -49,7 +49,7 @@ export default function Step3() {
       }
 
       await axios.post(
-        "http://localhost:5000/api/profile/step3",
+        `${import.meta.env.VITE_API_URL}/api/profile/step3`,
         {
           interests: selectedInterests,
           availability,

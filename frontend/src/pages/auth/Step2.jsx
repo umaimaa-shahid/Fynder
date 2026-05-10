@@ -51,7 +51,7 @@ export default function Step2() {
     try {
       
       const res = await axios.post(
-        "http://localhost:5000/api/profile/step2",
+        `${import.meta.env.VITE_API_URL}/api/profile/step2`,
         { skills: selectedSkills },
         {
           headers: {

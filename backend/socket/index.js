@@ -4,7 +4,7 @@ import Message from "../models/message.js";
 
 export const initSocket = (httpServer) => {
   const io = new Server(httpServer, {
-    cors: { origin: "http://localhost:5173", methods: ["GET", "POST"] },
+    cors: { origin: process.env.FRONTEND_URL || "http://localhost:5173" },
   });
 
   // Auth middleware for socket
