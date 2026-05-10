@@ -14,16 +14,17 @@ export default function SignIn() {
     try {
       const res = await axios.post(
         "http://localhost:5000/api/auth/login",
-        {
-          email,
-          password,
-        }
+        { email, password }
       );
 
-      // save token
+      // save token AND user info
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify({
+        id:    res.data.user._id,
+        name:  res.data.user.name,
+        email: res.data.user.email,
+      }));
 
-      // go to app
       navigate("/app/dashboard");
 
     } catch (err) {
@@ -71,22 +72,15 @@ export default function SignIn() {
           />
 
           <div className="signin-options">
-
             <label className="signin-remember">
-              <input
-                type="checkbox"
-                className="signin-checkbox"
-              />
+              <input type="checkbox" className="signin-checkbox" />
               Remember me
             </label>
-
             <Link to="/forgot" className="signin-forgot">
               Forgot password?
             </Link>
-
           </div>
 
-          {/* FIXED BUTTON */}
           <button
             onClick={handleLogin}
             className="signin-button"

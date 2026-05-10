@@ -1,98 +1,116 @@
-const router  = require('express').Router();
-const auth    = require('../middleware/auth');
-const Request = require('../models/request');
-const User    = require('../models/User');
+import express from "express";
+import authMiddleware from "../middleware/authMiddleware.js";
+import Request from "../models/request.js";
+import User from "../models/User.js";
 
-// ── POST /api/requests/send ────────────────────────────────────────
-// Body: { receiverId, message }
-router.post('/send', auth, async (req, res) => {
+const router = express.Router();
+
+// POST /api/requests/send
+router.post("/send", authMiddleware, async (req, res) => {
   try {
     const { receiverId, message } = req.body;
 
     if (!receiverId)
-      return res.status(400).json({ message: 'receiverId is required' });
+      return res.status(400).json({ message: "receiverId is required" });
 
     if (receiverId === req.user._id.toString())
-      return res.status(400).json({ message: 'Cannot send a request to yourself' });
+      return res.status(400).json({ message: "Cannot send a request to yourself" });
 
     const receiver = await User.findById(receiverId);
-    if (!receiver)
-      return res.status(404).json({ message: 'Receiver not found' });
+    if (!receiver) return res.status(404).json({ message: "Receiver not found" });
 
-    // Check for existing non-cancelled request
     const existing = await Request.findOne({
       sender: req.user._id,
       receiver: receiverId,
-      status: { $ne: 'cancelled' },
+      status: { $ne: "cancelled" },
     });
     if (existing)
-      return res.status(409).json({ message: 'Request already sent to this student' });
+      return res.status(409).json({ message: "Request already sent to this student" });
 
     const request = await Request.create({
       sender:   req.user._id,
       receiver: receiverId,
-      message:  message || '',
+      message:  message || "",
     });
 
-    await request.populate(['sender', 'receiver'], 'name studentId dept skills');
     res.status(201).json(request);
   } catch (err) {
     if (err.code === 11000)
-      return res.status(409).json({ message: 'Request already sent' });
+      return res.status(409).json({ message: "Request already sent" });
     res.status(500).json({ message: err.message });
   }
 });
 
-// ── GET /api/requests/received ─────────────────────────────────────
-// All requests sent TO the logged-in user
-router.get('/received', auth, async (req, res) => {
+// GET /api/requests/received
+router.get("/received", authMiddleware, async (req, res) => {
   try {
     const requests = await Request.find({ receiver: req.user._id })
       .sort({ createdAt: -1 })
-      .populate('sender', 'name studentId dept batch skills available')
+      .populate("sender", "name profile")
       .lean();
-    res.json(requests);
+
+    const flat = requests.map(r => ({
+      ...r,
+      sender: {
+        _id:       r.sender?._id,
+        name:      r.sender?.name,
+        studentId: r.sender?.profile?.rollNumber || "",
+        dept:      r.sender?.profile?.department || "",
+        batch:     r.sender?.profile?.batch || "",
+        skills:    r.sender?.profile?.skills || [],
+      },
+    }));
+
+    res.json(flat);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// ── GET /api/requests/sent ─────────────────────────────────────────
-// All requests sent BY the logged-in user
-router.get('/sent', auth, async (req, res) => {
+// GET /api/requests/sent
+router.get("/sent", authMiddleware, async (req, res) => {
   try {
     const requests = await Request.find({ sender: req.user._id })
       .sort({ createdAt: -1 })
-      .populate('receiver', 'name studentId dept batch skills available')
+      .populate("receiver", "name profile")
       .lean();
-    res.json(requests);
+
+    const flat = requests.map(r => ({
+      ...r,
+      receiver: {
+        _id:       r.receiver?._id,
+        name:      r.receiver?.name,
+        studentId: r.receiver?.profile?.rollNumber || "",
+        dept:      r.receiver?.profile?.department || "",
+      },
+    }));
+
+    res.json(flat);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// ── PATCH /api/requests/:id ────────────────────────────────────────
-// Body: { action: 'accept' | 'decline' | 'cancel' }
-router.patch('/:id', auth, async (req, res) => {
+// PATCH /api/requests/:id
+router.patch("/:id", authMiddleware, async (req, res) => {
   try {
     const { action } = req.body;
-    const request    = await Request.findById(req.params.id);
+    const request = await Request.findById(req.params.id);
 
-    if (!request)
-      return res.status(404).json({ message: 'Request not found' });
+    if (!request) return res.status(404).json({ message: "Request not found" });
 
     const uid = req.user._id.toString();
 
-    if (action === 'accept' || action === 'decline') {
+    if (action === "accept" || action === "decline") {
       if (request.receiver.toString() !== uid)
-        return res.status(403).json({ message: 'Not authorized' });
-      request.status = action === 'accept' ? 'accepted' : 'declined';
-    } else if (action === 'cancel') {
+        return res.status(403).json({ message: "Not authorized" });
+      request.status = action === "accept" ? "accepted" : "declined";
+    } else if (action === "cancel") {
       if (request.sender.toString() !== uid)
-        return res.status(403).json({ message: 'Not authorized' });
-      request.status = 'cancelled';
+        return res.status(403).json({ message: "Not authorized" });
+      request.status = "cancelled";
     } else {
-      return res.status(400).json({ message: 'Invalid action' });
+      return res.status(400).json({ message: "Invalid action" });
     }
 
     await request.save();
@@ -102,4 +120,4 @@ router.patch('/:id', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

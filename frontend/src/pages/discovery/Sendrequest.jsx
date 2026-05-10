@@ -1,37 +1,38 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
+import { api } from '../../utils/api';
 
 const SendMessage = () => {
-  const { state } = useLocation();
-  const navigate = useNavigate();
-  const student = state?.student || { name: 'Student', id: 'N/A', dept: 'N/A', initials: '??' };
+  const { state }  = useLocation();
+  const navigate   = useNavigate();
+  const student    = state?.student || { name: 'Student', studentId: 'N/A', dept: 'N/A' };
 
   const [message, setMessage] = useState('');
-  const [sent, setSent] = useState(false);
+  const [sent, setSent]       = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState('');
 
-function handleSend() {
-    setSent(true);
-    setTimeout(() => {
-      const today = new Date().toLocaleDateString('en-US', {
-        month: 'long', day: 'numeric', year: 'numeric',
+  const handleSend = async () => {
+    if (!student._id) {
+      setError('Student ID missing — cannot send request.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      await api('/requests/send', {
+        method: 'POST',
+        body: JSON.stringify({ receiverId: student._id, message }),
       });
-      
-      navigate('/app/requests', {
-        state: {
-          openTab: 'sent', // Tells Requests.jsx to switch tabs
-          newEntry: {
-            initials: student.initials || '??',
-            bg: '#2DFFEA',
-            name: student.name,
-            id: student.id,
-            dept: student.dept,
-            sentOn: today,
-          },
-        },
-      });
-    }, 1500);
-  }
+      setSent(true);
+      setTimeout(() => navigate('/app/requests', { state: { openTab: 'sent' } }), 1800);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="max-w-xl mx-auto">
@@ -41,8 +42,15 @@ function handleSend() {
             Message {student.name}
           </h2>
           <p className="text-sm text-gray-500 mb-6">
-            {student.id} &nbsp;•&nbsp; {student.dept}
+            {student.studentId} &nbsp;•&nbsp; {student.dept}
           </p>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+              ⚠️ {error}
+            </div>
+          )}
+
           <textarea
             value={message}
             onChange={e => setMessage(e.target.value)}
@@ -53,19 +61,20 @@ function handleSend() {
             <button
               onClick={() => navigate(-1)}
               className="flex-1 py-3 text-gray-400"
+              disabled={loading}
             >
               Cancel
             </button>
             <button
               onClick={handleSend}
-              className="flex-1 py-3 bg-[#2DFFEA] text-black font-bold rounded-xl"
+              disabled={loading || !message.trim()}
+              className="flex-1 py-3 bg-[#2DFFEA] text-black font-bold rounded-xl disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              Send
+              {loading ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Sending…</> : 'Send'}
             </button>
           </div>
         </div>
       ) : (
-        /* ── Confirmation ── */
         <div style={{ textAlign: 'center', paddingTop: 60 }}>
           <div style={{
             width: 80, height: 80, borderRadius: '50%',
@@ -83,11 +92,10 @@ function handleSend() {
             Your partner request has been sent to{' '}
             <strong style={{ color: '#2DFFEA' }}>{student.name}</strong>.
           </p>
-          <p style={{ color: '#64748B', fontSize: 13 }}>
-            Taking you to your sent requests…
-          </p>
+          <p style={{ color: '#64748B', fontSize: 13 }}>Taking you to your sent requests…</p>
         </div>
       )}
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 };

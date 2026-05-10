@@ -1,57 +1,70 @@
-const router  = require('express').Router();
-const auth    = require('../middleware/auth');
-const User    = require('../models/User');
-const Request = require('../models/request');
+import express from "express";
+import authMiddleware from "../middleware/authMiddleware.js";
+import User from "../models/User.js";
+import Request from "../models/request.js";
 
-// ── GET /api/dashboard ─────────────────────────────────────────────
-// Returns: stats (profile views placeholder, requests sent, pending),
-//          top matches (skill overlap), recent received requests
-router.get('/', auth, async (req, res) => {
+const router = express.Router();
+
+router.get("/", authMiddleware, async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // --- Counts ---
     const requestsSent    = await Request.countDocuments({ sender: userId });
-    const pendingReceived = await Request.countDocuments({ receiver: userId, status: 'pending' });
+    const pendingReceived = await Request.countDocuments({ receiver: userId, status: "pending" });
 
-    // --- Top Matches (users with most overlapping skills, excluding self) ---
-    const others = await User.find({ _id: { $ne: userId }, available: true })
-      .select('name studentId dept batch skills initials')
-      .lean();
+    const others = await User.find({ _id: { $ne: userId } }).lean();
 
-    const mySkills = new Set((req.user.skills || []).map(s => s.toLowerCase()));
+    const mySkills = new Set((req.user.profile?.skills || []).map(s => s.toLowerCase()));
 
-    const withScore = others.map(u => {
-      const shared = (u.skills || []).filter(s => mySkills.has(s.toLowerCase())).length;
-      const total  = new Set([...(req.user.skills || []), ...(u.skills || [])]).size;
-      const pct    = total ? Math.round((shared / total) * 100) : 0;
-      return { ...u, pct };
-    });
-
-    const topMatches = withScore
+    const topMatches = others
+      .map(u => {
+        const theirSkills = u.profile?.skills || [];
+        const shared = theirSkills.filter(s => mySkills.has(s.toLowerCase())).length;
+        const total  = new Set([...(req.user.profile?.skills || []), ...theirSkills]).size;
+        const pct    = total ? Math.round((shared / total) * 100) : 0;
+        return {
+          _id:       u._id,
+          name:      u.name,
+          studentId: u.profile?.rollNumber || "",
+          dept:      u.profile?.department || "",
+          skills:    u.profile?.skills || [],
+          pct,
+        };
+      })
       .sort((a, b) => b.pct - a.pct)
       .slice(0, 4);
 
-    // --- Recent received requests ---
-    const recentRequests = await Request.find({ receiver: userId, status: 'pending' })
+    const recentRequests = await Request.find({ receiver: userId, status: "pending" })
       .sort({ createdAt: -1 })
       .limit(3)
-      .populate('sender', 'name studentId dept skills')
+      .populate("sender", "name profile")
       .lean();
 
-    res.json({
-      stats: {
-        profileViews: 0,           // extend later with a real view-count model
-        requestsSent,
-        pendingReceived,
+    const flatRequests = recentRequests.map(r => ({
+      ...r,
+      sender: {
+        _id:       r.sender?._id,
+        name:      r.sender?.name,
+        studentId: r.sender?.profile?.rollNumber || "",
+        dept:      r.sender?.profile?.department || "",
       },
-      profileStrength: req.user.profileStrength,
+    }));
+
+    const p = req.user.profile || {};
+    const fields = [p.rollNumber, p.department, p.batch, p.bio,
+                    (p.skills||[]).length, (p.interests||[]).length];
+    const filled = fields.filter(Boolean).length;
+    const profileStrength = Math.round((filled / fields.length) * 100);
+
+    res.json({
+      stats: { profileViews: 0, requestsSent, pendingReceived },
+      profileStrength,
       topMatches,
-      recentRequests,
+      recentRequests: flatRequests,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-module.exports = router;
+export default router;

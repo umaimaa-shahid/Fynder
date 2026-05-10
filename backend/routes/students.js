@@ -1,31 +1,39 @@
-const router = require('express').Router();
-const auth   = require('../middleware/auth');
-const User   = require('../models/User');
+import express from "express";
+import authMiddleware from "../middleware/authMiddleware.js";
+import User from "../models/User.js";
 
-// ── GET /api/students ──────────────────────────────────────────────
-// Query params: search, dept, batch, skill, recommended
-// Returns all students (excluding self) with optional filters
-router.get('/', auth, async (req, res) => {
+const router = express.Router();
+
+// GET /api/students
+router.get("/", authMiddleware, async (req, res) => {
   try {
     const { search, dept, batch, skill } = req.query;
 
     const filter = { _id: { $ne: req.user._id } };
 
-    if (dept)  filter.dept  = { $regex: dept,  $options: 'i' };
-    if (batch) filter.batch = { $regex: batch, $options: 'i' };
-    if (skill) filter.skills = { $elemMatch: { $regex: skill, $options: 'i' } };
+    if (dept)  filter["profile.department"] = { $regex: dept,  $options: "i" };
+    if (batch) filter["profile.batch"]      = { $regex: batch, $options: "i" };
+    if (skill) filter["profile.skills"]     = { $elemMatch: { $regex: skill, $options: "i" } };
 
     if (search) {
       filter.$or = [
-        { name:   { $regex: search, $options: 'i' } },
-        { skills: { $elemMatch: { $regex: search, $options: 'i' } } },
+        { name: { $regex: search, $options: "i" } },
+        { "profile.skills": { $elemMatch: { $regex: search, $options: "i" } } },
       ];
     }
 
-    const students = await User.find(filter)
-      .select('-password')
-      .sort({ createdAt: -1 })
-      .lean();
+    const users = await User.find(filter).select("-password").lean();
+
+    const students = users.map(u => ({
+      _id:       u._id,
+      name:      u.name,
+      studentId: u.profile?.rollNumber || "",
+      dept:      u.profile?.department || "",
+      batch:     u.profile?.batch || "",
+      skills:    u.profile?.skills || [],
+      interests: u.profile?.interests || [],
+      available: u.profile?.availability === "available",
+    }));
 
     res.json(students);
   } catch (err) {
@@ -33,22 +41,29 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// ── GET /api/students/recommendations ─────────────────────────────
-// Returns top-matched students by skill overlap (sorted by % match)
-router.get('/recommendations', auth, async (req, res) => {
+// GET /api/students/recommendations
+router.get("/recommendations", authMiddleware, async (req, res) => {
   try {
-    const others = await User.find({ _id: { $ne: req.user._id }, available: true })
-      .select('-password')
-      .lean();
+    const others = await User.find({ _id: { $ne: req.user._id } }).lean();
 
-    const mySkills = new Set((req.user.skills || []).map(s => s.toLowerCase()));
+    const mySkills = new Set((req.user.profile?.skills || []).map(s => s.toLowerCase()));
 
     const ranked = others
       .map(u => {
-        const shared = (u.skills || []).filter(s => mySkills.has(s.toLowerCase())).length;
-        const total  = new Set([...(req.user.skills || []), ...(u.skills || [])]).size;
+        const theirSkills = u.profile?.skills || [];
+        const shared = theirSkills.filter(s => mySkills.has(s.toLowerCase())).length;
+        const total  = new Set([...(req.user.profile?.skills || []), ...theirSkills]).size;
         const matchPct = total ? Math.round((shared / total) * 100) : 0;
-        return { ...u, matchPct };
+        return {
+          _id:       u._id,
+          name:      u.name,
+          studentId: u.profile?.rollNumber || "",
+          dept:      u.profile?.department || "",
+          batch:     u.profile?.batch || "",
+          skills:    u.profile?.skills || [],
+          available: u.profile?.availability === "available",
+          matchPct,
+        };
       })
       .filter(u => u.matchPct > 0)
       .sort((a, b) => b.matchPct - a.matchPct)
@@ -60,15 +75,22 @@ router.get('/recommendations', auth, async (req, res) => {
   }
 });
 
-// ── GET /api/students/:id ──────────────────────────────────────────
-router.get('/:id', auth, async (req, res) => {
+// GET /api/students/:id
+router.get("/:id", authMiddleware, async (req, res) => {
   try {
-    const student = await User.findById(req.params.id).select('-password');
-    if (!student) return res.status(404).json({ message: 'Student not found' });
-    res.json(student);
+    const u = await User.findById(req.params.id).select("-password").lean();
+    if (!u) return res.status(404).json({ message: "Student not found" });
+    res.json({
+      _id:       u._id,
+      name:      u.name,
+      studentId: u.profile?.rollNumber || "",
+      dept:      u.profile?.department || "",
+      batch:     u.profile?.batch || "",
+      skills:    u.profile?.skills || [],
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-module.exports = router;
+export default router;
