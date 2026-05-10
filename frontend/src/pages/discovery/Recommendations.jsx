@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import Card from '../../components/Card';
-import { api } from '../../utils/api';
+import api from '../../utils/api';
 
 const Recommendations = () => {
   const navigate = useNavigate();
@@ -14,14 +14,14 @@ const Recommendations = () => {
 
   useEffect(() => {
     Promise.all([
-      api('/students/recommendations'),
-      api('/students'),
+      api.get('/students/recommendations'),
+      api.get('/students'),
     ])
       .then(([recs, all]) => {
-        setRecommended(recs);
-        setTotalCount(all.length);
+        setRecommended(recs.data);
+        setTotalCount(all.data.length);
       })
-      .catch(err => setError(err.message))
+      .catch(err => setError(err.response?.data?.message || err.message))
       .finally(() => setLoading(false));
   }, []);
 
@@ -66,7 +66,7 @@ const Recommendations = () => {
               key={student._id || i}
               student={{
                 ...student,
-                id: student.studentId,   // Card component expects `id`
+                id: student.studentId,
                 initials: student.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2),
               }}
               onSend={() => navigate('/app/send-request-message', { state: { student } })}

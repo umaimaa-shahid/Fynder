@@ -19,19 +19,10 @@ export default function SignIn() {
 
       // save token AND user info
       localStorage.setItem("token", res.data.token);
-<<<<<<< HEAD
-      localStorage.setItem("user", JSON.stringify({
-        id:    res.data.user._id,
-        name:  res.data.user.name,
-        email: res.data.user.email,
-      }));
-
-      navigate("/app/dashboard");
-=======
-      localStorage.setItem("token",     res.data.token);
       localStorage.setItem("userId",    res.data.user.id);
       localStorage.setItem("userName",  res.data.user.name);
       localStorage.setItem("userEmail", res.data.user.email);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
       
       console.log("TOKEN SAVED:", res.data.token);
       const user = res.data.user;
@@ -40,7 +31,6 @@ export default function SignIn() {
       } else {
         navigate("/profilesetup-step1");
       }
->>>>>>> e21f556965e5e4bddfdd97f91f5f6afdbfd3884a
 
     } catch (err) {
       console.log(err);

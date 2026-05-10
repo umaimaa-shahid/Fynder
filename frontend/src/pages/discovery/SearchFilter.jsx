@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Loader2 } from 'lucide-react';
-import { api } from '../../utils/api';
+import api from '../../utils/api';
 
 const initials = (name = '') =>
   name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
@@ -16,12 +16,11 @@ export default function SearchFilter() {
   const [batch, setBatch]             = useState('');
   const [skill, setSkill]             = useState('');
 
-  const [students, setStudents]           = useState([]);
-  const [recommended, setRecommended]     = useState([]);
-  const [loading, setLoading]             = useState(true);
-  const [error, setError]                 = useState('');
+  const [students, setStudents]       = useState([]);
+  const [recommended, setRecommended] = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState('');
 
-  // Fetch all students (with filters applied server-side)
   const fetchStudents = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -33,19 +32,18 @@ export default function SearchFilter() {
       if (skill)       params.append('skill', skill);
 
       const [all, recs] = await Promise.all([
-        api(`/students?${params}`),
-        api('/students/recommendations'),
+        api.get(`/students?${params}`),
+        api.get('/students/recommendations'),
       ]);
-      setStudents(all);
-      setRecommended(recs);
+      setStudents(all.data);
+      setRecommended(recs.data);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
   }, [searchQuery, dept, batch, skill]);
 
-  // Re-fetch when search/filters change (debounced for search bar)
   useEffect(() => {
     const timer = setTimeout(fetchStudents, 350);
     return () => clearTimeout(timer);
@@ -143,12 +141,10 @@ export default function SearchFilter() {
         </button>
       </div>
 
-      {/* Error */}
       {error && (
         <div className="text-red-400 text-sm text-center py-4">⚠️ {error}</div>
       )}
 
-      {/* Loading */}
       {loading ? (
         <div className="flex justify-center py-20">
           <Loader2 size={32} color="#2DFFEA" style={{ animation: 'spin 1s linear infinite' }} />
@@ -175,7 +171,6 @@ export default function SearchFilter() {
                   <p className="text-xs text-gray-500">
                     {s.studentId} • {s.dept} Batch {s.batch}
                   </p>
-                  {/* Match % badge for recommended tab */}
                   {activeTab === 'recommended' && s.matchPct !== undefined && (
                     <span className="text-xs font-bold text-[#2DFFEA]">{s.matchPct}% match</span>
                   )}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, UserCheck, Clock, Loader2 } from 'lucide-react';
-import { api } from '../../utils/api';
+import api from '../../utils/api';
 
 const STAT_META = [
   { key: 'profileViews',    label: 'Profile Views',    bg: 'rgba(167,139,250,0.15)', color: '#a78bfa', Icon: Eye       },
@@ -15,11 +15,9 @@ const cyanTag = {
   border: '1px solid rgba(45,255,234,0.22)',
 };
 
-// Get initials from name
 const initials = (name = '') =>
   name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
-// Avatar background colours (cycle by index)
 const AVATAR_COLORS = ['#7c3aed', '#0d9488', '#2563eb', '#db2777', '#d97706'];
 
 export default function Dashboard() {
@@ -27,19 +25,19 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
 
-  // Read logged-in user's name from localStorage (set during sign-in)
   const userName = JSON.parse(localStorage.getItem('user') || '{}').name || 'there';
 
   useEffect(() => {
-    api('/dashboard')
-      .then(setData)
-      .catch(err => setError(err.message))
+    api.get('/dashboard')
+      .then(res => setData(res.data))
+      .catch(err => setError(err.response?.data?.message || err.message))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
       <Loader2 size={32} color="#2DFFEA" style={{ animation: 'spin 1s linear infinite' }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 
@@ -54,7 +52,7 @@ export default function Dashboard() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      {/* ── Welcome card ── */}
+      {/* Welcome card */}
       <div style={{
         background: 'linear-gradient(135deg,rgba(13,148,136,0.13),rgba(45,255,234,0.04))',
         border: '1px solid rgba(34,211,238,0.2)',
@@ -105,7 +103,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Bottom grid ── */}
+      {/* Bottom grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
 
         {/* Top Matches */}
@@ -165,8 +163,7 @@ export default function Dashboard() {
                   <div style={{ fontWeight: 600, fontSize: 14, color: '#fff' }}>{r.sender?.name}</div>
                   <div style={{ fontSize: 11, color: '#64748B' }}>{r.sender?.studentId}</div>
                   <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
-                    {new Date(r.createdAt).toRelLocaleString?.() ||
-                      new Date(r.createdAt).toLocaleDateString()}
+                    {new Date(r.createdAt).toLocaleDateString()}
                   </div>
                 </div>
               </div>
@@ -177,7 +174,6 @@ export default function Dashboard() {
 
       </div>
 
-      {/* Spinner keyframe */}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );

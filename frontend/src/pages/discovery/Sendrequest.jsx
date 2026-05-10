@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle2, Loader2 } from 'lucide-react';
-import { api } from '../../utils/api';
+import api from '../../utils/api';
 
 const SendMessage = () => {
   const { state }  = useLocation();
@@ -21,14 +21,11 @@ const SendMessage = () => {
     setLoading(true);
     setError('');
     try {
-      await api('/requests/send', {
-        method: 'POST',
-        body: JSON.stringify({ receiverId: student._id, message }),
-      });
+      await api.post('/requests/send', { receiverId: student._id, message });
       setSent(true);
       setTimeout(() => navigate('/app/requests', { state: { openTab: 'sent' } }), 1800);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
@@ -70,7 +67,10 @@ const SendMessage = () => {
               disabled={loading || !message.trim()}
               className="flex-1 py-3 bg-[#2DFFEA] text-black font-bold rounded-xl disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {loading ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Sending…</> : 'Send'}
+              {loading
+                ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Sending…</>
+                : 'Send'
+              }
             </button>
           </div>
         </div>

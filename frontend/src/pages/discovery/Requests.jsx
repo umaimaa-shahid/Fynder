@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { UserRoundCheck, UserRoundPlus, Clock, X, Check, Loader2 } from 'lucide-react';
-import { api } from '../../utils/api';
+import api from '../../utils/api';
 
 const initials = (name = '') =>
   name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
 const AVATAR_COLORS = ['#2DFFEA', '#0d9488', '#7c3aed', '#2563eb', '#db2777'];
 
-/* ── timeAgo helper ── */
+const cyanTag  = { fontSize: 11, padding: '2px 9px', borderRadius: 4, background: 'rgba(45,255,234,0.09)', color: '#2DFFEA', border: '1px solid rgba(45,255,234,0.22)' };
+const batchTag = { fontSize: 11, padding: '2px 9px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: '#94A3B8', border: '1px solid rgba(255,255,255,0.08)' };
+
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins  = Math.floor(diff / 60000);
@@ -19,7 +21,6 @@ function timeAgo(dateStr) {
   return `${mins} min ago`;
 }
 
-/* ── Received card ── */
 function ReceivedCard({ req, onAction }) {
   const [status, setStatus]   = useState(req.status === 'pending' ? null : req.status);
   const [loading, setLoading] = useState(false);
@@ -27,14 +28,11 @@ function ReceivedCard({ req, onAction }) {
   const handle = async (action) => {
     setLoading(true);
     try {
-      await api(`/requests/${req._id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ action }),
-      });
+      await api.patch(`/requests/${req._id}`, { action });
       setStatus(action === 'accept' ? 'accepted' : 'declined');
       onAction?.();
     } catch (err) {
-      alert(err.message);
+      alert(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
@@ -57,11 +55,13 @@ function ReceivedCard({ req, onAction }) {
           </div>
         </div>
       </div>
+
       {req.message && (
         <div style={{ background: '#051518', borderRadius: 8, padding: '11px 14px', fontSize: 13, color: '#94A3B8', lineHeight: 1.55, marginBottom: 12 }}>
           {req.message}
         </div>
       )}
+
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 12, color: '#64748B', display: 'flex', alignItems: 'center', gap: 5 }}>
           <Clock size={13} />{timeAgo(req.createdAt)}
@@ -93,7 +93,6 @@ function ReceivedCard({ req, onAction }) {
   );
 }
 
-/* ── Sent card ── */
 function SentCard({ req, onAction }) {
   const [status, setStatus]   = useState(req.status);
   const [loading, setLoading] = useState(false);
@@ -101,14 +100,11 @@ function SentCard({ req, onAction }) {
   const handleCancel = async () => {
     setLoading(true);
     try {
-      await api(`/requests/${req._id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ action: 'cancel' }),
-      });
+      await api.patch(`/requests/${req._id}`, { action: 'cancel' });
       setStatus('cancelled');
       onAction?.();
     } catch (err) {
-      alert(err.message);
+      alert(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
@@ -153,28 +149,27 @@ function SentCard({ req, onAction }) {
   );
 }
 
-/* ── Main Requests page ── */
 export default function Requests() {
   const { state } = useLocation();
 
-  const [tab, setTab]               = useState(state?.openTab || 'received');
-  const [received, setReceived]     = useState([]);
-  const [sent, setSent]             = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState('');
+  const [tab, setTab]           = useState(state?.openTab || 'received');
+  const [received, setReceived] = useState([]);
+  const [sent, setSent]         = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState('');
 
   const fetchAll = async () => {
     setLoading(true);
     setError('');
     try {
       const [recv, sentData] = await Promise.all([
-        api('/requests/received'),
-        api('/requests/sent'),
+        api.get('/requests/received'),
+        api.get('/requests/sent'),
       ]);
-      setReceived(recv);
-      setSent(sentData);
+      setReceived(recv.data);
+      setSent(sentData.data);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
@@ -230,6 +225,3 @@ export default function Requests() {
     </div>
   );
 }
-
-const cyanTag  = { fontSize: 11, padding: '2px 9px', borderRadius: 4, background: 'rgba(45,255,234,0.09)', color: '#2DFFEA', border: '1px solid rgba(45,255,234,0.22)' };
-const batchTag = { fontSize: 11, padding: '2px 9px', borderRadius: 4, background: 'rgba(255,255,255,0.06)', color: '#94A3B8', border: '1px solid rgba(255,255,255,0.08)' };
