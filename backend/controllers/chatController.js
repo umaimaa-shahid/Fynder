@@ -1,5 +1,6 @@
 import Message from "../models/message.js";
 import User from "../models/User.js";
+import Group from "../models/group.js";
 
 // GET /api/chat/conversations — all users I've chatted with
 export const getConversations = async (req, res) => {
@@ -46,7 +47,7 @@ export const getMessages = async (req, res) => {
   try {
     const me = req.user.id;
     const other = req.params.userId;
-
+    
     const messages = await Message.find({
       $or: [
         { sender: me, receiver: other },

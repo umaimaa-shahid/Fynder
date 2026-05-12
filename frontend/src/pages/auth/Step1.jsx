@@ -25,7 +25,7 @@ export default function Step1() {
     }
 
     const token = localStorage.getItem("token");
-    
+
     console.log("TOKEN:", token);
 
     if (!token) {
@@ -33,34 +33,25 @@ export default function Step1() {
       return;
     }
 
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/profile/step1`,
-        form,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-        
-      );
+      const res = await axios.post(`${apiUrl}/api/profile/step1`, form, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       console.log("SUCCESS:", res.data);
       if (res.data.success) {
         navigate("/profilesetup-step2");
       } else {
         alert(res.data.message);
       }
-     
-
     } catch (err) {
-      console.error(
-        "STEP1 ERROR:",
-        err.response?.data || err.message
-      );
+      console.error("STEP1 ERROR:", err.response?.data || err.message);
 
       alert(
-        err.response?.data?.message ||
-        "Failed to save data. Please try again."
+        err.response?.data?.message || "Failed to save data. Please try again.",
       );
     }
   };

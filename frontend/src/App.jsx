@@ -24,8 +24,11 @@ import Dashboard from "./pages/discovery/Dashboard";
 import SearchFilter from "./pages/discovery/SearchFilter";
 import Recommendations from "./pages/discovery/Recommendations";
 import Requests from "./pages/discovery/Requests";
+
 import SendRequest from "./pages/discovery/Sendrequest";
-import SendMessage from "./pages/discovery/SendRequests";
+import SendRequests from "./pages/discovery/SendRequests";
+import SendMessage from "./pages/discovery/SendRequest";
+
 import "./App.css";
 
 function App() {

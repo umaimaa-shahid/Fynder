@@ -40,6 +40,7 @@ export default function Step3() {
       return;
     }
 
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
     try {
       const token = localStorage.getItem("token");
 
@@ -49,7 +50,7 @@ export default function Step3() {
       }
 
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/profile/step3`,
+        `${apiUrl}/api/profile/step3`,
         {
           interests: selectedInterests,
           availability,

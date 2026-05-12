@@ -187,7 +187,7 @@ export default function SearchFilter() {
                 </div>
               </div>
               <button
-                onClick={() => navigate('/app/send-request-message', { state: { student: s } })}
+                onClick={() => navigate('/app/send-request', { state: { student: s } })}
                 className="w-full bg-[#2DFFEA] text-[#051518] py-3.5 rounded-xl font-bold text-sm hover:brightness-110 transition-all"
               >
                 🚀 Send Partner Request
