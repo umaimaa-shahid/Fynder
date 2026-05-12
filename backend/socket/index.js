@@ -1,10 +1,15 @@
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import Message from "../models/message.js";
+import User from "../models/User.js";
+import Group from "../models/group.js";
 
 export const initSocket = (httpServer) => {
   const io = new Server(httpServer, {
-    cors: { origin: process.env.FRONTEND_URL || "http://localhost:5173" },
+    cors: {
+      origin: process.env.FRONTEND_URL || "http://localhost:5173",
+      methods: ["GET", "POST"],
+    },
   });
 
   // Auth middleware for socket

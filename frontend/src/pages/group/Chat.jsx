@@ -19,7 +19,8 @@ export default function Chat() {
   // Connect socket ONCE
   useEffect(() => {
     const token = localStorage.getItem("token");
-    socket = io(import.meta.env.VITE_API_URL, { auth: { token } });
+    const socketUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    socket = io(socketUrl, { auth: { token } });
 
     socket.on("newMessage", (msg) => {
       const current = activeChatRef.current;
