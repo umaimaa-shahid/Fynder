@@ -14,6 +14,7 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleCreateAccount = async () => {
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
     try {
       // basic validation
       if (!name || !email || !password || !confirmPassword) {
@@ -25,21 +26,16 @@ export default function SignUp() {
         alert("Passwords do not match");
         return;
       }
-
-      const res = await axios.post(
-  `${import.meta.env.VITE_API_URL}/api/auth/signup`,
-        {
-          name,
-          email,
-          password,
-        }
-      );
+      const res = await axios.post(`${apiUrl}/api/auth/signup`, {
+        name,
+        email,
+        password,
+      });
 
       // save token
-
+      localStorage.setItem("token", res.data.token);
       // go to email verification
       navigate("/verify-email");
-
     } catch (err) {
       console.log(err);
       alert("Signup failed (user may already exist)");
@@ -48,7 +44,6 @@ export default function SignUp() {
 
   return (
     <div className="signup-page">
-
       {/* Logo */}
       <div className="signup-logo">
         <div className="logo-icon">F</div>
@@ -58,7 +53,6 @@ export default function SignUp() {
       {/* Form Section */}
       <div className="signup-form-wrapper">
         <div className="signup-form">
-
           <h2 className="signup-title">Create Account</h2>
 
           <p className="signup-subtitle">
@@ -116,10 +110,7 @@ export default function SignUp() {
             </span>
           </div>
 
-          <button
-            onClick={handleCreateAccount}
-            className="signup-button"
-          >
+          <button onClick={handleCreateAccount} className="signup-button">
             Create Account
           </button>
 
@@ -131,10 +122,9 @@ export default function SignUp() {
           </p>
 
           <div className="signup-note">
-            <strong>Note:</strong> You must use your official university
-            email address (<span className="font-mono">@nu.edu.pk</span>)
+            <strong>Note:</strong> You must use your official university email
+            address (<span className="font-mono">@nu.edu.pk</span>)
           </div>
-
         </div>
       </div>
 

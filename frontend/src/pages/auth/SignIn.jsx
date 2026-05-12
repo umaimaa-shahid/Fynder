@@ -11,9 +11,10 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        `${apiUrl}/api/auth/login`,
         { email, password },
       );
 
