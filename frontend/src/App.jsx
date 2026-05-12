@@ -26,8 +26,7 @@ import Recommendations from "./pages/discovery/Recommendations";
 import Requests from "./pages/discovery/Requests";
 
 import SendRequest from "./pages/discovery/Sendrequest";
-import SendRequests from "./pages/discovery/SendRequests";
-import SendMessage from "./pages/discovery/SendRequest";
+import SendMessage from "./pages/discovery/SendRequests";
 
 import "./App.css";
 
