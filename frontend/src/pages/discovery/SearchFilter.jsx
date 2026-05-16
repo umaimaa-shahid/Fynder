@@ -15,22 +15,19 @@ export default function SearchFilter() {
   const [dept, setDept]               = useState('');
   const [batch, setBatch]             = useState('');
   const [skill, setSkill]             = useState('');
-
   const [students, setStudents]       = useState([]);
   const [recommended, setRecommended] = useState([]);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState('');
 
   const fetchStudents = useCallback(async () => {
-    setLoading(true);
-    setError('');
+    setLoading(true); setError('');
     try {
       const params = new URLSearchParams();
       if (searchQuery) params.append('search', searchQuery);
       if (dept)        params.append('dept', dept);
       if (batch)       params.append('batch', batch);
       if (skill)       params.append('skill', skill);
-
       const [all, recs] = await Promise.all([
         api.get(`/students?${params}`),
         api.get('/students/recommendations'),
@@ -45,159 +42,289 @@ export default function SearchFilter() {
   }, [searchQuery, dept, batch, skill]);
 
   useEffect(() => {
-    const timer = setTimeout(fetchStudents, 350);
-    return () => clearTimeout(timer);
+    const t = setTimeout(fetchStudents, 350);
+    return () => clearTimeout(t);
   }, [fetchStudents]);
 
   const displayed = activeTab === 'all' ? students : recommended;
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold italic text-white">Search Students</h1>
+    <div style={{ maxWidth: 900, margin: '0 auto' }}>
+      <style>{`
+        /* ── Search row ── */
+        .sf-search-row {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 16px;
+          width: 100%;
+        }
+        .sf-search-wrap {
+          flex: 1;
+          position: relative;
+          min-width: 0;
+        }
+        .sf-search-input {
+          width: 100%;
+          background: #0a2a2e;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 12px;
+          padding: 12px 12px 12px 40px;
+          color: white;
+          font-size: 14px;
+          outline: none;
+          box-sizing: border-box;
+        }
+        .sf-search-input:focus { border-color: #2DFFEA; }
+        .sf-search-icon {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #64748b;
+          pointer-events: none;
+        }
+        .sf-filter-btn {
+          background: #0a2a2e;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 12px;
+          padding: 10px 20px;
+          color: #94a3b8;
+          font-size: 14px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: border-color 0.2s, color 0.2s;
+          flex-shrink: 0;
+        }
+        .sf-filter-btn.open { border-color: #2DFFEA; color: #2DFFEA; }
 
-      {/* Search bar + filter toggle */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
+        /* ── Filter panel ── */
+        .sf-filter-panel {
+          background: #0a2a2e;
+          border: 1px solid rgba(45,255,234,0.2);
+          border-radius: 16px;
+          padding: 20px;
+          margin-bottom: 16px;
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 12px;
+        }
+        .sf-filter-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; display: block; }
+        .sf-filter-input {
+          width: 100%;
+          background: white;
+          border-radius: 8px;
+          padding: 8px 12px;
+          color: #082226;
+          font-size: 13px;
+          border: none;
+          outline: none;
+          box-sizing: border-box;
+        }
+        .sf-filter-actions { grid-column: 1/-1; display: flex; gap: 12px; margin-top: 4px; }
+
+        /* ── Tabs ── */
+        .sf-tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 20px; }
+        .sf-tab {
+          padding: 10px 16px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #64748b;
+          border: none;
+          background: transparent;
+          border-bottom: 2px solid transparent;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: color 0.15s;
+          margin-bottom: -1px;
+        }
+        .sf-tab.active { color: #2DFFEA; border-bottom-color: #2DFFEA; }
+
+        /* ── Student grid ── */
+        .sf-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+        .sf-card {
+          background: #0a2a2e;
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 16px;
+          padding: 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          transition: border-color 0.2s;
+        }
+        .sf-card:hover { border-color: rgba(45,255,234,0.3); }
+        .sf-card-top { display: flex; align-items: flex-start; gap: 12px; }
+        .sf-avatar {
+          width: 48px; height: 48px;
+          background: #2DFFEA;
+          color: #051518;
+          border-radius: 12px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 16px; font-weight: 700;
+          flex-shrink: 0;
+        }
+        .sf-info { flex: 1; min-width: 0; }
+        .sf-name { font-size: 15px; font-weight: 700; color: white; margin-bottom: 2px; }
+        .sf-sub  { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+        .sf-available {
+          display: inline-block;
+          background: white;
+          color: black;
+          font-size: 10px;
+          font-weight: 700;
+          padding: 2px 10px;
+          border-radius: 999px;
+          margin-top: 4px;
+        }
+        .sf-skills-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
+        .sf-skills { display: flex; flex-wrap: wrap; gap: 6px; }
+        .sf-skill {
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: #cbd5e1;
+          padding: 3px 10px;
+          border-radius: 6px;
+          font-size: 11px;
+        }
+
+        /* Send button always at bottom, full width */
+        .sf-btn {
+          width: 100%;
+          background: #2DFFEA;
+          color: #051518;
+          border: none;
+          border-radius: 10px;
+          padding: 11px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: opacity 0.2s;
+          margin-top: auto;
+        }
+        .sf-btn:hover { opacity: 0.88; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+          .sf-search-row   { flex-direction: column; gap: 8px; }
+          .sf-filter-btn   { width: 100%; justify-content: center; }
+          .sf-grid         { grid-template-columns: 1fr; }
+          .sf-filter-panel { grid-template-columns: 1fr; }
+          .sf-card         { padding: 14px; }
+          .sf-avatar       { width: 40px; height: 40px; font-size: 13px; border-radius: 10px; }
+          .sf-name         { font-size: 14px; }
+          .sf-tab          { font-size: 12px; padding: 8px 10px; }
+        }
+
+        @media (min-width: 769px) and (max-width: 1023px) {
+          .sf-grid { grid-template-columns: 1fr; }
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
+
+      <h1 style={{ fontSize: 'clamp(20px,5vw,28px)', fontWeight: 700, fontStyle: 'italic', color: 'white', marginBottom: 20 }}>
+        Search Students
+      </h1>
+
+      {/* Search + Filter button */}
+      <div className="sf-search-row">
+        <div className="sf-search-wrap">
+          <Search className="sf-search-icon" size={16} />
           <input
-            type="text"
+            className="sf-search-input"
             placeholder="Search by name, skills or interests..."
-            className="w-full bg-[#0a2a2e] border border-white/10 rounded-xl py-3 px-10 text-sm text-white focus:border-[#2DFFEA] outline-none"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
-          <Search className="absolute left-3 top-3 text-gray-500" size={18} />
         </div>
         <button
+          className={`sf-filter-btn${showFilters ? ' open' : ''}`}
           onClick={() => setShowFilters(!showFilters)}
-          className={`bg-[#0a2a2e] border ${showFilters ? 'border-[#2DFFEA] text-[#2DFFEA]' : 'border-white/10 text-gray-400'} rounded-xl px-4 py-3 text-sm flex items-center gap-2 hover:border-[#2DFFEA] transition-all`}
         >
-          <Filter size={18} /> Filters
+          <Filter size={16} /> Filters
         </button>
       </div>
 
       {/* Filter panel */}
       {showFilters && (
-        <div className="p-6 bg-[#0a2a2e] border border-[#2DFFEA]/20 rounded-2xl grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-400 uppercase">Department</label>
-            <input
-              type="text"
-              placeholder="e.g. Computer Science"
-              className="w-full bg-white rounded-lg p-2.5 text-black text-sm outline-none"
-              value={dept}
-              onChange={e => setDept(e.target.value)}
-            />
+        <div className="sf-filter-panel">
+          <div>
+            <span className="sf-filter-label">Department</span>
+            <input className="sf-filter-input" placeholder="e.g. BCS" value={dept} onChange={e => setDept(e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-400 uppercase">Batch</label>
-            <input
-              type="text"
-              placeholder="e.g. 2023"
-              className="w-full bg-white rounded-lg p-2.5 text-black text-sm outline-none"
-              value={batch}
-              onChange={e => setBatch(e.target.value)}
-            />
+          <div>
+            <span className="sf-filter-label">Batch</span>
+            <input className="sf-filter-input" placeholder="e.g. 2023" value={batch} onChange={e => setBatch(e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-400 uppercase">Skill</label>
-            <input
-              type="text"
-              placeholder="e.g. React"
-              className="w-full bg-white rounded-lg p-2.5 text-black text-sm outline-none"
-              value={skill}
-              onChange={e => setSkill(e.target.value)}
-            />
+          <div>
+            <span className="sf-filter-label">Skill</span>
+            <input className="sf-filter-input" placeholder="e.g. React" value={skill} onChange={e => setSkill(e.target.value)} />
           </div>
-          <div className="flex gap-4 mt-2">
-            <button
-              onClick={() => setShowFilters(false)}
-              className="bg-[#2DFFEA] text-black px-6 py-2 rounded-lg font-bold text-xs"
-            >
-              Apply
-            </button>
-            <button
-              onClick={() => { setDept(''); setBatch(''); setSkill(''); setSearchQuery(''); }}
-              className="text-red-400 px-6 py-2 text-xs font-bold"
-            >
-              Reset All
+          <div className="sf-filter-actions">
+            <button className="sf-btn" style={{ width: 'auto', padding: '8px 20px', marginTop: 0 }} onClick={() => setShowFilters(false)}>Apply</button>
+            <button onClick={() => { setDept(''); setBatch(''); setSkill(''); setSearchQuery(''); }}
+              style={{ background: 'transparent', border: 'none', color: '#f87171', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+              Reset
             </button>
           </div>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-4 border-b border-white/5">
-        <button
-          onClick={() => setActiveTab('all')}
-          className={`pb-3 text-sm font-bold ${activeTab === 'all' ? 'text-[#2DFFEA] border-b-2 border-[#2DFFEA]' : 'text-gray-500'}`}
-        >
+      <div className="sf-tabs">
+        <button className={`sf-tab${activeTab === 'all' ? ' active' : ''}`} onClick={() => setActiveTab('all')}>
           All Students ({students.length})
         </button>
-        <button
-          onClick={() => setActiveTab('recommended')}
-          className={`pb-3 text-sm font-bold ${activeTab === 'recommended' ? 'text-[#2DFFEA] border-b-2 border-[#2DFFEA]' : 'text-gray-500'}`}
-        >
+        <button className={`sf-tab${activeTab === 'recommended' ? ' active' : ''}`} onClick={() => setActiveTab('recommended')}>
           Recommended ({recommended.length})
         </button>
       </div>
 
-      {error && (
-        <div className="text-red-400 text-sm text-center py-4">⚠️ {error}</div>
-      )}
+      {error && <p style={{ color: '#f87171', marginBottom: 16 }}>⚠️ {error}</p>}
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 size={32} color="#2DFFEA" style={{ animation: 'spin 1s linear infinite' }} />
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
+          <Loader2 size={30} color="#2DFFEA" style={{ animation: 'spin 1s linear infinite' }} />
+        </div>
+      ) : displayed.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: '#64748b', background: 'rgba(10,42,46,0.5)', borderRadius: 16, border: '1px dashed rgba(255,255,255,0.1)' }}>
+          No students found.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {displayed.length > 0 ? displayed.map(s => (
-            <div
-              key={s._id}
-              className="bg-[#0a2a2e] p-6 rounded-[24px] border border-white/5 relative group transition-all hover:border-[#2DFFEA]/30"
-            >
-              {s.available && (
-                <span className="absolute top-6 right-6 bg-white text-black px-3 py-1 rounded-full text-[10px] font-bold">
-                  Available
-                </span>
-              )}
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 bg-[#2DFFEA] text-[#051518] rounded-2xl flex items-center justify-center text-xl font-bold">
-                  {initials(s.name)}
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">{s.name}</h3>
-                  <p className="text-xs text-gray-500">
-                    {s.studentId} • {s.dept} Batch {s.batch}
-                  </p>
+        <div className="sf-grid">
+          {displayed.map(s => (
+            <div key={s._id} className="sf-card">
+              <div className="sf-card-top">
+                <div className="sf-avatar">{initials(s.name)}</div>
+                <div className="sf-info">
+                  <div className="sf-name">{s.name}</div>
+                  <div className="sf-sub">{s.studentId} • {s.dept}</div>
+                  <div className="sf-sub">Batch {s.batch}</div>
+                  {s.available && <span className="sf-available">Available</span>}
                   {activeTab === 'recommended' && s.matchPct !== undefined && (
-                    <span className="text-xs font-bold text-[#2DFFEA]">{s.matchPct}% match</span>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#2DFFEA', marginTop: 4 }}>{s.matchPct}% match</div>
                   )}
                 </div>
               </div>
-              <div className="mb-6">
-                <p className="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-wider">Skills</p>
-                <div className="flex flex-wrap gap-2">
-                  {(s.skills || []).map(sk => (
-                    <span key={sk} className="bg-white/5 border border-white/10 text-gray-300 px-3 py-1 rounded-lg text-xs">
-                      {sk}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <button
-                onClick={() => navigate('/app/send-request', { state: { student: s } })}
-                className="w-full bg-[#2DFFEA] text-[#051518] py-3.5 rounded-xl font-bold text-sm hover:brightness-110 transition-all"
-              >
+              {(s.skills || []).length > 0 && (
+                <>
+                  <div className="sf-skills-label">Skills</div>
+                  <div className="sf-skills">
+                    {(s.skills || []).map(sk => <span key={sk} className="sf-skill">{sk}</span>)}
+                  </div>
+                </>
+              )}
+              <button className="sf-btn" onClick={() => navigate('/app/send-request', { state: { student: s } })}>
                 🚀 Send Partner Request
               </button>
             </div>
-          )) : (
-            <div className="text-gray-500 col-span-2 text-center py-20 bg-[#0a2a2e]/50 rounded-3xl border border-dashed border-white/10">
-              No students found matching your search.
-            </div>
-          )}
+          ))}
         </div>
       )}
     </div>

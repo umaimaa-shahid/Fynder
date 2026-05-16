@@ -1,0 +1,172 @@
+/* ==============================================
+   FYNDER – RESPONSIVE.CSS
+   ============================================== */
+
+#mobile-bottom-nav { display: none; }
+#mobile-top-actions { display: none; }
+
+html, body, #root { overflow-x: hidden; max-width: 100vw; }
+
+button, a, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ================================================
+   MOBILE  ≤ 768px
+   ================================================ */
+@media (max-width: 768px) {
+
+  body { padding-bottom: 68px; }
+
+  /* HEADER */
+  header nav { display: none !important; }
+  header.px-8 { padding-left: 1rem !important; padding-right: 1rem !important; }
+  header .border-l { display: none !important; }
+
+  /* Show profile + settings icons in top-right on mobile */
+  #mobile-top-actions {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* MAIN & FOOTER */
+  main.flex-1 { padding: 1rem !important; }
+  footer { display: none !important; }
+
+  /* BOTTOM NAV */
+  #mobile-bottom-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 100;
+    background: #0a1f23;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 6px 0 env(safe-area-inset-bottom, 6px);
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  #mobile-bottom-nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 9px;
+    font-weight: 500;
+    color: #64748b;
+    text-decoration: none;
+    padding: 4px 6px;
+    border-radius: 8px;
+    transition: color 0.15s;
+    min-width: 40px;
+    line-height: 1;
+  }
+  #mobile-bottom-nav a.active { color: #2dffea; }
+  #mobile-bottom-nav a:hover  { color: #2dffea; }
+
+  /* DASHBOARD */
+  .dash-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+  .dash-bottom-grid { grid-template-columns: 1fr !important; }
+
+  /* CHAT */
+  .chat-container {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: unset !important;
+    gap: 0 !important;
+  }
+  .chat-sidebar {
+    width: 100% !important;
+    flex-direction: column !important;
+    padding: 12px !important;
+    gap: 8px !important;
+    max-height: 180px;
+    overflow-y: auto;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .conversations-list { flex-direction: column !important; gap: 6px !important; }
+  .conversation-card  { padding: 10px !important; }
+  .chat-main          { min-height: 380px; }
+  .chat-messages      { padding: 12px !important; }
+  .message-row        { max-width: 88% !important; }
+  .chat-input-area    { padding: 10px 12px !important; gap: 8px !important; }
+  .chat-input-actions { display: none !important; }
+
+  /* MY GROUP — fix oversized text */
+  .group-hero .page-title    { font-size: 1.4rem !important; }
+  .group-hero .page-subtitle { font-size: 0.85rem !important; }
+  .members-grid              { grid-template-columns: 1fr !important; }
+  .group-header-top          { flex-direction: column !important; gap: 12px !important; }
+  .group-header-card         { padding: 16px !important; }
+
+  /* PROFILE */
+  .profile-content-grid { grid-template-columns: 1fr !important; }
+  .profile-header-card  {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 20px !important;
+  }
+  .profile-meta      { justify-content: center !important; flex-wrap: wrap !important; }
+  .profile-badges    { justify-content: center !important; }
+  .profile-title-row { flex-direction: column !important; align-items: center !important; gap: 12px !important; }
+  .profile-title     { font-size: 1.3rem !important; }
+
+  /* SETTINGS */
+  .settings-page { max-width: 100% !important; }
+
+  /* HOMEPAGE */
+  .hero          { padding: 5rem 1rem 3rem !important; }
+  .hero-title    { font-size: 2rem !important; }
+  .hero-subtitle { font-size: 0.95rem !important; }
+  .features-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+  .steps-grid    { grid-template-columns: 1fr 1fr !important; gap: 1rem !important; }
+  .features, .steps, .cta-wrapper { padding: 3rem 1rem !important; }
+  .cta           { padding: 2.5rem 1rem !important; }
+  .cta-title     { font-size: 1.4rem !important; }
+
+  /* AUTH FORMS */
+  .signin-form, .signup-form,
+  .step1-form, .step2-form, .step3-form {
+    padding: 1.5rem 1rem !important;
+    margin: 0 0.5rem !important;
+  }
+  .skills-grid, .interests-grid { grid-template-columns: 1fr !important; }
+
+  /* SEARCH / STUDENT CARDS */
+  .sf-search-row  { flex-direction: column !important; gap: 8px !important; }
+  .sf-search-wrap { width: 100% !important; }
+  .sf-filter-btn  { width: 100% !important; justify-content: center !important; }
+  .sf-grid        { grid-template-columns: 1fr !important; }
+  .sf-card        { padding: 14px !important; display: flex !important; flex-direction: column !important; }
+  .sf-card-top    { flex-wrap: nowrap !important; align-items: flex-start !important; }
+  .sf-available   { position: static !important; display: inline-block !important; margin-top: 6px !important; }
+  .sf-btn         { width: 100% !important; margin-top: auto !important; padding: 12px !important; }
+  .sf-tab         { white-space: nowrap !important; font-size: 0.75rem !important; padding: 8px 10px !important; }
+
+} /* closes @media (max-width: 768px) */
+
+/* ================================================
+   SMALL PHONES <= 400px
+   ================================================ */
+@media (max-width: 400px) {
+  .steps-grid { grid-template-columns: 1fr !important; }
+  #mobile-bottom-nav a     { font-size: 8px !important; min-width: 34px !important; padding: 4px 3px !important; }
+  #mobile-bottom-nav a svg { width: 17px !important; height: 17px !important; }
+  .group-hero .page-title  { font-size: 1.2rem !important; }
+  .sf-tab { font-size: 0.7rem !important; padding: 6px 8px !important; }
+}
+
+/* ================================================
+   TABLET 769-1023px
+   ================================================ */
+@media (min-width: 769px) and (max-width: 1023px) {
+  header nav a { font-size: 0.78rem !important; gap: 4px !important; }
+  .sf-grid { grid-template-columns: 1fr 1fr !important; }
+}
