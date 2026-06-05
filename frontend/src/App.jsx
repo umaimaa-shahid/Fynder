@@ -4,6 +4,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import Layout from "./components/Layout";
 import Chat from "./pages/group/Chat";
 import MyGroup from "./pages/group/MyGroup";
@@ -33,6 +34,7 @@ import "./App.css";
 function App() {
   return (
     <Router>
+      <Analytics />
       <Routes>
         {/* 🔹 AUTH ROUTES (Direct access, No Layout) */}
         <Route path="/" element={<HomePage />} />
